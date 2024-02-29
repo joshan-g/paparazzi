@@ -9,8 +9,10 @@
         "editor.tabSize": 4,
     },
     "files.associations": {
-        "Makefile.*": "makefile"
+        "Makefile.*": "makefile",
+        "cv.h": "c"
     },
     "C_Cpp.dimInactiveRegions": false,
     "esbonio.sphinx.confDir": "",
+    "cmake.configureOnOpen": false,
 }

@@ -35,7 +35,8 @@
 #include <stdbool.h>
 #include <math.h>
 #include "pthread.h"
-
+// hello! this is a test.
+//new test
 #define PRINT(string,...) fprintf(stderr, "[object_detector->%s()] " string,__FUNCTION__ , ##__VA_ARGS__)
 #if OBJECT_DETECTOR_VERBOSE
 #define VERBOSE_PRINT PRINT

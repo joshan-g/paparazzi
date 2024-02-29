@@ -244,4 +244,3 @@ uint8_t chooseRandomIncrementAvoidance(void)
   }
   return false;
 }
-
