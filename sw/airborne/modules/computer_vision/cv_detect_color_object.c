@@ -216,26 +216,23 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
 
-//Random comment
   // Go through all the pixels
   for (uint16_t y = 0; y < img->h; y++) {
     for (uint16_t x = 0; x < img->w; x ++) {
       // Check if the color is inside the specified values
       uint8_t *yp, *up, *vp;
-      //Added line below to do the multiplication once rather than 3 times.
-      uint32_t multiply_wid_hei = y * 2 * img->w + 2 * x
       if (x % 2 == 0) {
         // Even x
-        up = &buffer[multiply_wid_hei];      // U
-        yp = &buffer[multiply_wid_hei + 1];  // Y1
-        vp = &buffer[multiply_wid_hei + 2];  // V
+        up = &buffer[y * 2 * img->w + 2 * x];      // U
+        yp = &buffer[y * 2 * img->w + 2 * x + 1];  // Y1
+        vp = &buffer[y * 2 * img->w + 2 * x + 2];  // V
         //yp = &buffer[y * 2 * img->w + 2 * x + 3]; // Y2
       } else {
         // Uneven x
-        up = &buffer[multiply_wid_hei - 2];  // U
+        up = &buffer[y * 2 * img->w + 2 * x - 2];  // U
         //yp = &buffer[y * 2 * img->w + 2 * x - 1]; // Y1
-        vp = &buffer[multiply_wid_hei];      // V
-        yp = &buffer[multiply_wid_hei + 1];  // Y2
+        vp = &buffer[y * 2 * img->w + 2 * x];      // V
+        yp = &buffer[y * 2 * img->w + 2 * x + 1];  // Y2
       }
       if ( (*yp >= lum_min) && (*yp <= lum_max) &&
            (*up >= cb_min ) && (*up <= cb_max ) &&
