@@ -216,7 +216,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
 
-//New change
+
   // Go through all the pixels
   for p = 0
   while (p < 2 * img->w * img->h){
