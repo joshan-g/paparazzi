@@ -18,6 +18,22 @@
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX1" value="130"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN1" value="150"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX1" value="190"/>
+
+      <!-- Detect black -->
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="70"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
+
+      <!-- Detect green -->
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="60"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX3" value="130"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN3" value="75"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="110"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="120"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="140"/>
     </target>
     <target name="nps" board="pc">
       <module name="fdm" type="gazebo"/>
@@ -31,6 +47,14 @@
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX1" value="121"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN1" value="134"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX1" value="249"/>
+
+      <!-- Detect black -->
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="67"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
     </target>
     
     <define name="ARRIVED_AT_WAYPOINT" value="0.5"/><!-- Detect arrival at waypoint when within 0.5m -->
@@ -65,9 +89,18 @@
       <define name="COLOR_OBJECT_DETECTOR_CAMERA1" value="front_camera"/>
       <define name="COLOR_OBJECT_DETECTOR_FPS1" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_DRAW1" value="1"/>
+
+      <define name="COLOR_OBJECT_DETECTOR_CAMERA2" value="front_camera"/>
+      <define name="COLOR_OBJECT_DETECTOR_FPS2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_DRAW2" value="1"/>
+
+      <define name="COLOR_OBJECT_DETECTOR_CAMERA3" value="front_camera"/>
+      <define name="COLOR_OBJECT_DETECTOR_FPS3" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_DRAW3" value="1"/>
     </module>
     <module name="orange_avoider">
-      <define name="ORANGE_AVOIDER_VISUAL_DETECTION_ID" value="COLOR_OBJECT_DETECTION1_ID"/>
+      <define name="ORANGE_AVOIDER_VISUAL_DETECTION_ID" value="COLOR_OBJECT_DETECTION1_ID"/> 
+      <!--Option to include "FLOOR_VISUAL_DETECTION_ID" here. See bebop_course_orangeavoid_guided file-->
     </module>
     <module name="video_rtp_stream">
       <define name="VIEWVIDEO_CAMERA" value="front_camera"/>
@@ -235,7 +268,7 @@
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
     <!-- Good weather -->
     <define name="MAX_BANK" value="20" unit="deg"/>
-    <define name="REF_MAX_SPEED" value="0.5" unit="m/s"/>
+    <define name="REF_MAX_SPEED" value="0.7" unit="m/s"/>
     <!-- Bad weather -->
     <!-- define name="MAX_BANK" value="32" unit="deg"/ -->
     <define name="PGAIN" value="120"/>
