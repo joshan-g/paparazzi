@@ -225,7 +225,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       // Check if the color is inside the specified values
       uint8_t *yp, *up, *vp;
       //Added line below to do the multiplication once rather than 3 times.
-      uint32_t multiply_wid_hei = y * 2 * img->w + 2 * x
+      uint32_t multiply_wid_hei = y * 2 * img->w + 2 * x;
       if (x % 2 == 0) {
         // Even x
         up = &buffer[multiply_wid_hei];      // U
