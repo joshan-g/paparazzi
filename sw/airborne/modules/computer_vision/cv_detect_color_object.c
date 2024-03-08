@@ -157,12 +157,12 @@ void color_object_detector_init(void)
   pthread_mutex_init(&mutex, NULL);
 #ifdef COLOR_OBJECT_DETECTOR_CAMERA1
 #ifdef COLOR_OBJECT_DETECTOR_LUM_MIN1
-  cod_lum_min1 = COLOR_OBJECT_DETECTOR_LUM_MIN1;
-  cod_lum_max1 = COLOR_OBJECT_DETECTOR_LUM_MAX1;
-  cod_cb_min1 = COLOR_OBJECT_DETECTOR_CB_MIN1;
-  cod_cb_max1 = COLOR_OBJECT_DETECTOR_CB_MAX1;
-  cod_cr_min1 = COLOR_OBJECT_DETECTOR_CR_MIN1;
-  cod_cr_max1 = COLOR_OBJECT_DETECTOR_CR_MAX1;
+  cod_lum_min1 = COLOR_OBJECT_DETECTOR_LUM_MIN1; // Y
+  cod_lum_max1 = COLOR_OBJECT_DETECTOR_LUM_MAX1; // Y
+  cod_cb_min1 = COLOR_OBJECT_DETECTOR_CB_MIN1; //min U   // CB stands for colour blue
+  cod_cb_max1 = COLOR_OBJECT_DETECTOR_CB_MAX1; //max U
+  cod_cr_min1 = COLOR_OBJECT_DETECTOR_CR_MIN1; //min V    //CR stands for colour red.
+  cod_cr_max1 = COLOR_OBJECT_DETECTOR_CR_MAX1; //max V
 #endif
 #ifdef COLOR_OBJECT_DETECTOR_DRAW1
   cod_draw1 = COLOR_OBJECT_DETECTOR_DRAW1;
