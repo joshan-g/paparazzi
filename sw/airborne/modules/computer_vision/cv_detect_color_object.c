@@ -128,7 +128,7 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_max = cod_cr_max2;
       draw = cod_draw2;
       break;
-    case 2:
+    case 3.:
       lum_min = cod_lum_min3;
       lum_max = cod_lum_max3;
       cb_min = cod_cb_min3;
@@ -265,6 +265,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
    */
   // Start pixel count
   uint32_t p = 0;
+  uint32_t x = 0;
+  uint32_t y = 0;
   
   // Go through all the pixels
   while (p < img->h * img->w){
@@ -297,6 +299,11 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     }
     // NR: Increment pixel
     p ++;
+    x ++;
+    if (x > img->w){
+      x = 0;
+      y ++;
+    }
   }
   if (cnt > 0) {
     *p_xc = (int32_t)roundf(tot_x / ((float) cnt) - img->w * 0.5f);
