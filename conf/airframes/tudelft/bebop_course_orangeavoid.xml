@@ -20,7 +20,7 @@
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX1" value="190"/>
 
       <!-- Detect black -->
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="63"/>
       <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="70"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
@@ -50,19 +50,19 @@
 
       <!-- Detect black -->
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="67"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="20"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
 
       <!-- Detect green -->
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX3" value="255"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="110"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="130"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="30"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX3" value="80"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN3" value="110"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="125"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="100"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="140"/>
     </target>
     
     <define name="ARRIVED_AT_WAYPOINT" value="0.5"/><!-- Detect arrival at waypoint when within 0.5m -->

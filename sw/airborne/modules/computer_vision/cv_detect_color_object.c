@@ -215,18 +215,18 @@ void color_object_detector_init(void)
 
 #ifdef COLOR_OBJECT_DETECTOR_CAMERA3
 #ifdef COLOR_OBJECT_DETECTOR_LUM_MIN3
-  cod_lum_min2 = COLOR_OBJECT_DETECTOR_LUM_MIN3;
-  cod_lum_max2 = COLOR_OBJECT_DETECTOR_LUM_MAX3;
-  cod_cb_min2 = COLOR_OBJECT_DETECTOR_CB_MIN3;
-  cod_cb_max2 = COLOR_OBJECT_DETECTOR_CB_MAX3;
-  cod_cr_min2 = COLOR_OBJECT_DETECTOR_CR_MIN3;
-  cod_cr_max2 = COLOR_OBJECT_DETECTOR_CR_MAX3;
+  cod_lum_min3 = COLOR_OBJECT_DETECTOR_LUM_MIN3;
+  cod_lum_max3 = COLOR_OBJECT_DETECTOR_LUM_MAX3;
+  cod_cb_min3 = COLOR_OBJECT_DETECTOR_CB_MIN3;
+  cod_cb_max3 = COLOR_OBJECT_DETECTOR_CB_MAX3;
+  cod_cr_min3 = COLOR_OBJECT_DETECTOR_CR_MIN3;
+  cod_cr_max3 = COLOR_OBJECT_DETECTOR_CR_MAX3;
 #endif
 #ifdef COLOR_OBJECT_DETECTOR_DRAW3
   cod_draw3 = COLOR_OBJECT_DETECTOR_DRAW3;
 #endif
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 1);
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 2);
 #endif
 }
 
@@ -258,6 +258,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
 
+
   /** NR - The below section loops through all pixels, 
    * and checks if the pixel is within given colour range.
    * Then returns the total count of pixels that fall within the range.
@@ -265,44 +266,47 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
    */
   // Start pixel count
   uint32_t p = 0;
-  uint32_t x = 0;
-  uint32_t y = 0;
+  int x = 0;
+  int y = 0;
   
   // Go through all the pixels
   while (p < img->h * img->w){
-    // Check if the color is inside the specified values
-    uint8_t *yp, *up, *vp;
-    // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
-    uint32_t p2 = 2 * p; 
-    if (p % 2 == 0) {
-      // Even x
-      up = &buffer[p2];      // U
-      yp = &buffer[p2 + 1];  // Y1
-      vp = &buffer[p2 + 2];  // V
-      //yp = &buffer[p2 + 3]; // Y2
-    } else {
-      // Uneven x
-      up = &buffer[p2 - 2];  // U
-      //yp = &buffer[p2 - 1]; // Y1
-      vp = &buffer[p2];      // V
-      yp = &buffer[p2 + 1];  // Y2
-    }
-    if ( (*yp >= lum_min) && (*yp <= lum_max) &&
-          (*up >= cb_min ) && (*up <= cb_max ) &&
-          (*vp >= cr_min ) && (*vp <= cr_max )) {
-      cnt ++;
-      tot_x += x;
-      tot_y += y;
-      if (draw){
-        *yp = 255;  // make pixel brighter in image
+    if (x > ((img->w / 2) - 20) && x < ((img->w/2) + 20)){
+      printf("x: %d", x);
+      // Check if the color is inside the specified values
+      uint8_t *yp, *up, *vp;
+      // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
+      uint32_t p2 = 2 * p; 
+      if (p % 2 == 0) {
+        // Even x
+        up = &buffer[p2];      // U
+        yp = &buffer[p2 + 1];  // Y1
+        vp = &buffer[p2 + 2];  // V
+        //yp = &buffer[p2 + 3]; // Y2
+      } else {
+        // Uneven x
+        up = &buffer[p2 - 2];  // U
+        //yp = &buffer[p2 - 1]; // Y1
+        vp = &buffer[p2];      // V
+        yp = &buffer[p2 + 1];  // Y2
       }
-    }
-    // NR: Increment pixel
-    p ++;
-    x ++;
-    if (x > img->w){
-      x = 0;
-      y ++;
+      if ( (*yp >= lum_min) && (*yp <= lum_max) &&
+            (*up >= cb_min ) && (*up <= cb_max ) &&
+            (*vp >= cr_min ) && (*vp <= cr_max )) {
+        cnt ++;
+        tot_x += x;
+        tot_y += y;
+        if (draw){
+          *yp = 255;  // make pixel brighter in image
+        }
+      }
+      // NR: Increment pixel
+      p ++;
+      x ++;
+      if (x > img->w){
+        x = 0;
+        y ++;
+      }
     }
   }
   if (cnt > 0) {
@@ -312,6 +316,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     *p_xc = 0;
     *p_yc = 0;
   }
+  printf("y_final: %d", y);
   return cnt;
 }
 
