@@ -210,7 +210,7 @@ void color_object_detector_init(void)
   cod_draw2 = COLOR_OBJECT_DETECTOR_DRAW2;
 #endif
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA2, object_detector2, COLOR_OBJECT_DETECTOR_FPS2, 1);
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA2, object_detector2, COLOR_OBJECT_DETECTOR_FPS2, 0);
 #endif
 
 #ifdef COLOR_OBJECT_DETECTOR_CAMERA3
@@ -226,7 +226,7 @@ void color_object_detector_init(void)
   cod_draw3 = COLOR_OBJECT_DETECTOR_DRAW3;
 #endif
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 2);
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 0);
 #endif
 }
 
@@ -271,8 +271,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   
   // Go through all the pixels
   while (p < img->h * img->w){
-    if (x > ((img->w / 2) - 20) && x < ((img->w/2) + 20)){
-      printf("x: %d", x);
+    //if (x > ((img->w / 2) - 20) && x < ((img->w/2) + 20)){
+     // printf("x: %d", x);
       // Check if the color is inside the specified values
       uint8_t *yp, *up, *vp;
       // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
@@ -307,7 +307,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
         x = 0;
         y ++;
       }
-    }
+    //}
   }
   if (cnt > 0) {
     *p_xc = (int32_t)roundf(tot_x / ((float) cnt) - img->w * 0.5f);

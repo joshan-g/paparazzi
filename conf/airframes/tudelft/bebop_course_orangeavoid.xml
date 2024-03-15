@@ -57,23 +57,14 @@
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
 
       <!-- Detect green -->
-<<<<<<< HEAD
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="30"/>
       <define name="COLOR_OBJECT_DETECTOR_LUM_MAX3" value="80"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MIN3" value="110"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="125"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="100"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="140"/>
-=======
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX3" value="255"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="125"/><!--changed this to 125-->
-      <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="130"/>
->>>>>>> a844a15d2b8a7ce23832ec0734f5a7a1cd073414
+
     </target>
-    
     <define name="ARRIVED_AT_WAYPOINT" value="0.5"/><!-- Detect arrival at waypoint when within 0.5m -->
 
   <!-- Subsystem section -->
@@ -95,9 +86,7 @@
 
     <!-- Video/Camera modules -->
     <module name="bebop_cam"/>
-    <!--module name="bebop_ae_awb">
-      <define name="CV_AE_AWB_VERBOSE" value="0" />
-    </module-->
+
     <module name="video_capture">
       <define name="VIDEO_CAPTURE_CAMERA" value="front_camera"/>
       <define name="VIDEO_CAPTURE_FPS" value="10"/>
@@ -125,6 +114,7 @@
       <define name="VIEWVIDEO_DOWNSIZE_FACTOR" value="1"/>
       <define name="VIEWVIDEO_QUALITY_FACTOR" value="40"/>
     </module>
+    
   </firmware>
 
   <commands>
