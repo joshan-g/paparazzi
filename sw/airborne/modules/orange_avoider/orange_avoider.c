@@ -105,7 +105,7 @@ void orange_avoider_periodic(void)
   }
 
   // compute current color thresholds
-  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h;
+  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h / 4; // Divided by 6 to balance pixel row height. 6 for 40 pixel row height
 
   VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
 
@@ -141,6 +141,7 @@ void orange_avoider_periodic(void)
 
       // randomly select new search direction
       chooseRandomIncrementAvoidance();
+      //////////////////////////////////// change above to intentionally go away from centroid position. Away from wall if possible. May not be possible.
 
       navigation_state = SEARCH_FOR_SAFE_HEADING;
 
@@ -150,6 +151,7 @@ void orange_avoider_periodic(void)
 
       // make sure we have a couple of good readings before declaring the way safe
       if (obstacle_free_confidence >= 2){
+        increase_nav_heading(heading_increment); // NR: This makes it turn slightly further after declaring itself to move to forward.
         navigation_state = SAFE;
       }
       break;
@@ -180,6 +182,7 @@ void orange_avoider_periodic(void)
 uint8_t increase_nav_heading(float incrementDegrees)
 {
   float new_heading = stateGetNedToBodyEulers_f()->psi + RadOfDeg(incrementDegrees);
+  printf("How many times?");
 
   // normalize heading to [-pi, pi]
   FLOAT_ANGLE_NORMALIZE(new_heading);

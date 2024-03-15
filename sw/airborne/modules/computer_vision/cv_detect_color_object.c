@@ -109,6 +109,42 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   uint8_t cr_min, cr_max;
   bool draw;
 
+  uint32_t count = 0;
+  uint32_t count_i = 0;
+
+  int32_t x_c, y_c;
+
+  for (int i = 3; i >= 1; i--){
+    if (i == 1){
+      lum_min = cod_lum_min1;
+      lum_max = cod_lum_max1;
+      cb_min = cod_cb_min1;
+      cb_max = cod_cb_max1;
+      cr_min = cod_cr_min1;
+      cr_max = cod_cr_max1;
+      draw = cod_draw1;
+    } else if (i == 2){
+      lum_min = cod_lum_min2;
+      lum_max = cod_lum_max2;
+      cb_min = cod_cb_min2;
+      cb_max = cod_cb_max2;
+      cr_min = cod_cr_min2;
+      cr_max = cod_cr_max2;
+      draw = cod_draw2;
+    } else if (i == 3){
+      lum_min = cod_lum_min3;
+      lum_max = cod_lum_max3;
+      cb_min = cod_cb_min3;
+      cb_max = cod_cb_max3;
+      cr_min = cod_cr_min3;
+      cr_max = cod_cr_max3;
+      draw = cod_draw3;
+    }
+    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
+    count += count_i;
+  }
+//We get here with all 3
+  /*
   switch (filter){
     case 1:
       lum_min = cod_lum_min1;
@@ -139,16 +175,15 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       break;
     default:
       return img;
-  };
+  };*/
 
-  int32_t x_c, y_c;
+  //int32_t x_c, y_c;
 
   // Filter and find centroid
-  uint32_t count = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
+  //uint32_t count = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
   VERBOSE_PRINT("Color count %d: %u, threshold %u, x_c %d, y_c %d\n", camera, object_count, count_threshold, x_c, y_c);
   VERBOSE_PRINT("centroid %d: (%d, %d) r: %4.2f a: %4.2f\n", camera, x_c, y_c,
         hypotf(x_c, y_c) / hypotf(img->w * 0.5, img->h * 0.5), RadOfDeg(atan2f(y_c, x_c)));
-
   pthread_mutex_lock(&mutex);
   global_filters[filter-1].color_count = count;
   global_filters[filter-1].x_c = x_c;
@@ -270,44 +305,57 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   int y = 0;
   
   // Go through all the pixels
-  while (p < img->h * img->w){
-    //if (x > ((img->w / 2) - 20) && x < ((img->w/2) + 20)){
-     // printf("x: %d", x);
-      // Check if the color is inside the specified values
-      uint8_t *yp, *up, *vp;
-      // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
-      uint32_t p2 = 2 * p; 
-      if (p % 2 == 0) {
-        // Even x
-        up = &buffer[p2];      // U
-        yp = &buffer[p2 + 1];  // Y1
-        vp = &buffer[p2 + 2];  // V
-        //yp = &buffer[p2 + 3]; // Y2
-      } else {
-        // Uneven x
-        up = &buffer[p2 - 2];  // U
-        //yp = &buffer[p2 - 1]; // Y1
-        vp = &buffer[p2];      // V
-        yp = &buffer[p2 + 1];  // Y2
-      }
-      if ( (*yp >= lum_min) && (*yp <= lum_max) &&
-            (*up >= cb_min ) && (*up <= cb_max ) &&
-            (*vp >= cr_min ) && (*vp <= cr_max )) {
-        cnt ++;
-        tot_x += x;
-        tot_y += y;
-        if (draw){
-          *yp = 255;  // make pixel brighter in image
+  while (p < img->h * img->w) {
+    if (x >= ((img->w / 2) - 20) && x <= ((img->w/2) + 20)){
+      //if (y >= 40 && y <= 480){
+        //printf("x: %d", x);
+        // Check if the color is inside the specified values
+        uint8_t *yp, *up, *vp;
+        // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
+        uint32_t p2 = 2 * p; 
+        if (p % 2 == 0) {
+          // Even x
+          up = &buffer[p2];      // U
+          yp = &buffer[p2 + 1];  // Y1
+          vp = &buffer[p2 + 2];  // V
+          //yp = &buffer[p2 + 3]; // Y2
+        } else {
+          // Uneven x
+          up = &buffer[p2 - 2];  // U
+          //yp = &buffer[p2 - 1]; // Y1
+          vp = &buffer[p2];      // V
+          yp = &buffer[p2 + 1];  // Y2
         }
-      }
-      // NR: Increment pixel
-      p ++;
-      x ++;
-      if (x > img->w){
-        x = 0;
-        y ++;
-      }
-    //}
+        if ( (*yp >= lum_min) && (*yp <= lum_max) &&
+              (*up >= cb_min ) && (*up <= cb_max ) &&
+              (*vp >= cr_min ) && (*vp <= cr_max )) {
+                  
+          // NR: Make more the weight of pixels within central range.
+          if (y >= 210 && y <= 310){
+            cnt += 4;
+          } else if (y >= 100 && y <= 420) {
+            cnt += 2;
+          } else {
+            cnt ++;
+          }
+          
+          //cnt++;
+
+          tot_x += x;
+          tot_y += y;
+          if (draw){
+            *yp = 255;  // make pixel brighter in image
+          }
+        }
+      //}
+    }
+    // NR: Increment pixel
+    p ++;
+    x ++;
+    if (x > img->w){
+      x = 0;
+      y ++;
+    }
   }
   if (cnt > 0) {
     *p_xc = (int32_t)roundf(tot_x / ((float) cnt) - img->w * 0.5f);
@@ -316,7 +364,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     *p_xc = 0;
     *p_yc = 0;
   }
-  printf("y_final: %d", y);
+  //printf("y_final: %d", y);
   return cnt;
 }
 

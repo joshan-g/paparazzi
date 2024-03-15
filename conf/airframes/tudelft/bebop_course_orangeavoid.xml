@@ -20,12 +20,12 @@
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX1" value="190"/>
 
       <!-- Detect black -->
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="63"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="70"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="70"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="90"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="100"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="155"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="100"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="155"/>
 
       <!-- Detect green -->
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="60"/>
@@ -50,11 +50,11 @@
 
       <!-- Detect black -->
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="20"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="5"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>  <!-- This is low because the difference between the wall and blackboard is too minimal in sim-->
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="5"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
-      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX2" value="5"/>
 
       <!-- Detect green -->
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN3" value="30"/>
