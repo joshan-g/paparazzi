@@ -333,7 +333,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           // NR: Make more the weight of pixels within central range.
           if (y >= 210 && y <= 310){
             cnt += 4;
-          } else if (y >= 100 && y <= 420) {
+          } else if (y >= 70 && y <= 450) {
             cnt += 2;
           } else {
             cnt ++;
