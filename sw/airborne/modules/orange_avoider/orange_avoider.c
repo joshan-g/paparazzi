@@ -18,6 +18,7 @@
  */
 
 #include "modules/orange_avoider/orange_avoider.h"
+#include "firmwares/rotorcraft/guidance/guidance_h.h" // used for speed setting
 #include "firmwares/rotorcraft/navigation.h"
 #include "generated/airframe.h"
 #include "state.h"
@@ -104,74 +105,164 @@ void orange_avoider_periodic(void)
     return;
   }
 
-  // compute current color thresholds
-  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h;
+  if (guidance_h.mode != GUIDANCE_H_MODE_GUIDED) { // if not using guidance mode ( so I don't need to remember what to comment/uncomment when this doesn't work on test day )
+      
+    // compute current color thresholds
+    int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h / 4; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
 
-  VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
+    VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
 
-  // update our safe confidence using color threshold
-  if(color_count < color_count_threshold){
-    obstacle_free_confidence++;
-  } else {
-    obstacle_free_confidence -= 2;  // be more cautious with positive obstacle detections
-  }
+    // update our safe confidence using color threshold
+    if(color_count < color_count_threshold){
+      obstacle_free_confidence++;
+    } else {
+      obstacle_free_confidence -= 2;  // be more cautious with positive obstacle detections
+    }
 
-  // bound obstacle_free_confidence
-  Bound(obstacle_free_confidence, 0, max_trajectory_confidence);
+    // bound obstacle_free_confidence
+    Bound(obstacle_free_confidence, 0, max_trajectory_confidence);
 
-  float moveDistance = fminf(maxDistance, 0.2f * obstacle_free_confidence);
+    float moveDistance = fminf(maxDistance, 0.2f * obstacle_free_confidence);
 
-  switch (navigation_state){
-    case SAFE:
-      // Move waypoint forward
-      moveWaypointForward(WP_TRAJECTORY, 1.5f * moveDistance);
-      if (!InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
-        navigation_state = OUT_OF_BOUNDS;
-      } else if (obstacle_free_confidence == 0){
-        navigation_state = OBSTACLE_FOUND;
-      } else {
-        moveWaypointForward(WP_GOAL, moveDistance);
-      }
+    switch (navigation_state){
+      case SAFE:
+        // Move waypoint forward
+        moveWaypointForward(WP_TRAJECTORY, 2.3f * moveDistance);
+        if (!InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
+          navigation_state = OUT_OF_BOUNDS;
+        } else if (obstacle_free_confidence == 0){
+          navigation_state = OBSTACLE_FOUND;
+        } else {
+          moveWaypointForward(WP_GOAL, moveDistance);
+        }
 
-      break;
-    case OBSTACLE_FOUND:
-      // stop
-      waypoint_move_here_2d(WP_GOAL);
-      waypoint_move_here_2d(WP_TRAJECTORY);
+        break;
+      case OBSTACLE_FOUND:
+        // stop
+        waypoint_move_here_2d(WP_GOAL);
+        waypoint_move_here_2d(WP_TRAJECTORY);
 
-      // randomly select new search direction
-      chooseRandomIncrementAvoidance();
+        // randomly select new search direction
+        chooseParticularIncrementAvoidance();
+        //////////////////////////////////// change above to intentionally go away from centroid position. Away from wall if possible. May not be possible.
 
-      navigation_state = SEARCH_FOR_SAFE_HEADING;
+        navigation_state = SEARCH_FOR_SAFE_HEADING;
 
-      break;
-    case SEARCH_FOR_SAFE_HEADING:
-      increase_nav_heading(heading_increment);
-
-      // make sure we have a couple of good readings before declaring the way safe
-      if (obstacle_free_confidence >= 2){
-        navigation_state = SAFE;
-      }
-      break;
-    case OUT_OF_BOUNDS:
-      increase_nav_heading(heading_increment);
-      moveWaypointForward(WP_TRAJECTORY, 1.5f);
-
-      if (InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
-        // add offset to head back into arena
+        break;
+      case SEARCH_FOR_SAFE_HEADING:
         increase_nav_heading(heading_increment);
 
-        // reset safe counter
-        obstacle_free_confidence = 0;
+        // make sure we have a couple of good readings before declaring the way safe
+        if (obstacle_free_confidence >= 2){
+          increase_nav_heading(heading_increment); // NR: This makes it turn slightly further after declaring itself to move to forward.
+          navigation_state = SAFE;
+        }
+        break;
+      case OUT_OF_BOUNDS:
+        increase_nav_heading(heading_increment);
+        moveWaypointForward(WP_TRAJECTORY, 1.5f);
 
-        // ensure direction is safe before continuing
+        if (InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
+          // add offset to head back into arena
+          increase_nav_heading(heading_increment);
+
+          // reset safe counter
+          obstacle_free_confidence = 0;
+
+          // ensure direction is safe before continuing
+          navigation_state = SEARCH_FOR_SAFE_HEADING;
+        }
+        break;
+      default:
+        break;
+    }
+    return;
+  } else { // Using guidance mode
+
+    // compute current color thresholds
+    int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h / 4; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
+
+    VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
+
+    // update our safe confidence using color threshold
+    if(color_count < color_count_threshold){
+      obstacle_free_confidence++;
+    } else {
+      obstacle_free_confidence -= 2;  // be more cautious with positive obstacle detections
+    }
+    
+    
+    
+    /* TODO
+    # make speed variable
+    - change moveWaypointForward to use velocity x time to get distance? Is it a nav function?
+    - If it is a NAV function then find something in GUIDANCE to check if the drone is about to fly out of bounds.
+    - 
+    */
+
+
+
+    // bound obstacle_free_confidence
+    Bound(obstacle_free_confidence, 0, max_trajectory_confidence);
+
+    float moveDistance = fminf(maxDistance, 0.2f * obstacle_free_confidence);
+
+    float speed_sp = fminf(oag_max_speed, 0.2f*obstacle_free_confidence); // 0.2 is up for tweaking
+
+    switch (navigation_state){
+      case SAFE:
+        // Move waypoint forward
+        moveWaypointForward(WP_TRAJECTORY, 2.3f * moveDistance);
+        if (!InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
+          navigation_state = OUT_OF_BOUNDS;
+        } else if (obstacle_free_confidence == 0){
+          navigation_state = OBSTACLE_FOUND;
+        } else {
+          moveWaypointForward(WP_GOAL, moveDistance);
+        }
+
+        break;
+      case OBSTACLE_FOUND: // easy fix
+        // stop
+        waypoint_move_here_2d(WP_GOAL);
+        waypoint_move_here_2d(WP_TRAJECTORY);
+
+        // randomly select new search direction
+        chooseParticularIncrementAvoidance();
+
         navigation_state = SEARCH_FOR_SAFE_HEADING;
-      }
-      break;
-    default:
-      break;
+
+        break;
+      case SEARCH_FOR_SAFE_HEADING: // sma;; change
+        increase_nav_heading(heading_increment);
+
+        // make sure we have a couple of good readings before declaring the way safe
+        if (obstacle_free_confidence >= 2){
+          increase_nav_heading(heading_increment); // NR: This makes it turn slightly further after declaring itself to move to forward.
+          navigation_state = SAFE;
+        }
+        break;
+      case OUT_OF_BOUNDS: // idk what to change here yet
+        increase_nav_heading(heading_increment);
+        moveWaypointForward(WP_TRAJECTORY, 1.5f);
+
+        if (InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
+          // add offset to head back into arena
+          increase_nav_heading(heading_increment);
+
+          // reset safe counter
+          obstacle_free_confidence = 0;
+
+          // ensure direction is safe before continuing
+          navigation_state = SEARCH_FOR_SAFE_HEADING;
+        }
+        break;
+      default:
+        break;
+    }
+    return;
+
   }
-  return;
 }
 
 /*

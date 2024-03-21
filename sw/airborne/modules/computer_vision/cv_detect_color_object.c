@@ -217,6 +217,21 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
 
+<<<<<<< Updated upstream
+=======
+
+  /** NR - The below section loops through all pixels, 
+   * and checks if the pixel is within given colour range.
+   * Then returns the total count of pixels that fall within the range.
+   * I've changed it to only multiply once rather than like several thousand times...
+   */
+  // Start pixel count
+  uint32_t p = 0;
+  int x = 0;
+  int y = 0;
+  int leftcount = 0, rightcount = 0; // counts used for clear side chooser in orange_avoider
+  
+>>>>>>> Stashed changes
   // Go through all the pixels
   for (uint16_t y = 0; y < img->h; y++) {
     for (uint16_t x = 0; x < img->w; x ++) {
