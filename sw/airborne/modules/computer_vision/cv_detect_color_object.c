@@ -21,7 +21,7 @@
 
 /**
  * @file modules/computer_vision/cv_detect_object.h
- * Assumes the object consists of a continuous color and checks
+ * Assumes the object consists of a continuous and checks
  * if you are over the defined object or not
  */
 
@@ -111,7 +111,8 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
 
   uint32_t count = 0;
   uint32_t count_i = 0;
-
+  
+  //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
 
   for (int i = 3; i >= 1; i--){
@@ -142,8 +143,10 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
     }
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
     count += count_i;
+    //y_c_sum += y_c;
   }
-//We get here with all 3
+  //y_c = y_c_sum / 3;
+//The above for loop sums the count of all 3. 
   /*
   switch (filter){
     case 1:
@@ -331,9 +334,11 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
               (*vp >= cr_min ) && (*vp <= cr_max )) {
                   
           // NR: Make more the weight of pixels within central range.
-          if (y >= 210 && y <= 310){
+          if (y >= 195 && y <= 325){
             cnt += 4;
-          } else if (y >= 70 && y <= 450) {
+          } else if (y >= 130 && y <= 390){
+            cnt += 3;
+          } else if (y >= 65 && y <= 455) {
             cnt += 2;
           } else {
             cnt ++;
@@ -364,7 +369,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     *p_xc = 0;
     *p_yc = 0;
   }
-  //printf("y_final: %d", y);
+  printf("Y_Centroid_From_CV_file: %d", *p_yc);
   return cnt;
 }
 

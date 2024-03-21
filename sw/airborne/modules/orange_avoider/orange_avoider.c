@@ -42,6 +42,7 @@ static uint8_t calculateForwards(struct EnuCoor_i *new_coor, float distanceMeter
 static uint8_t moveWaypoint(uint8_t waypoint, struct EnuCoor_i *new_coor);
 static uint8_t increase_nav_heading(float incrementDegrees);
 static uint8_t chooseRandomIncrementAvoidance(void);
+static uint8_t chooseSmartDirectionBasedOnXCentroid(void);
 
 enum navigation_state_t {
   SAFE,
@@ -59,6 +60,7 @@ int32_t color_count = 0;                // orange color count from color filter 
 int16_t obstacle_free_confidence = 0;   // a measure of how certain we are that the way ahead is safe.
 float heading_increment = 5.f;          // heading angle increment [deg]
 float maxDistance = 2.25;               // max waypoint displacement [m]
+int16_t y_c = 0;
 
 const int16_t max_trajectory_confidence = 5; // number of consecutive negative object detections to be sure we are obstacle free
 
@@ -74,11 +76,12 @@ const int16_t max_trajectory_confidence = 5; // number of consecutive negative o
 #endif
 static abi_event color_detection_ev;
 static void color_detection_cb(uint8_t __attribute__((unused)) sender_id,
-                               int16_t __attribute__((unused)) pixel_x, int16_t __attribute__((unused)) pixel_y,
+                               int16_t __attribute__((unused)) pixel_x, int16_t pixel_y,
                                int16_t __attribute__((unused)) pixel_width, int16_t __attribute__((unused)) pixel_height,
                                int32_t quality, int16_t __attribute__((unused)) extra)
 {
   color_count = quality;
+  y_c = pixel_y;
 }
 
 /*
@@ -88,7 +91,7 @@ void orange_avoider_init(void)
 {
   // Initialise random values
   srand(time(NULL));
-  chooseRandomIncrementAvoidance();
+  chooseRandomIncrementAvoidance(); // NR: Intentionaly keeping random here at init.
 
   // bind our colorfilter callbacks to receive the color filter outputs
   AbiBindMsgVISUAL_DETECTION(ORANGE_AVOIDER_VISUAL_DETECTION_ID, &color_detection_ev, color_detection_cb);
@@ -105,7 +108,7 @@ void orange_avoider_periodic(void)
   }
 
   // compute current color thresholds
-  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h / 4; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
+  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h /3; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
 
   VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
 
@@ -132,6 +135,7 @@ void orange_avoider_periodic(void)
       } else {
         moveWaypointForward(WP_GOAL, moveDistance);
       }
+      printf("centroid: %d", y_c);
 
       break;
     case OBSTACLE_FOUND:
@@ -140,9 +144,10 @@ void orange_avoider_periodic(void)
       waypoint_move_here_2d(WP_TRAJECTORY);
 
       // randomly select new search direction
-      chooseRandomIncrementAvoidance();
+      //chooseRandomIncrementAvoidance();
       //////////////////////////////////// change above to intentionally go away from centroid position. Away from wall if possible. May not be possible.
-
+      printf("Centroid: %d", y_c);
+      chooseSmartDirectionBasedOnXCentroid();
       navigation_state = SEARCH_FOR_SAFE_HEADING;
 
       break;
@@ -182,7 +187,6 @@ void orange_avoider_periodic(void)
 uint8_t increase_nav_heading(float incrementDegrees)
 {
   float new_heading = stateGetNedToBodyEulers_f()->psi + RadOfDeg(incrementDegrees);
-  printf("How many times?");
 
   // normalize heading to [-pi, pi]
   FLOAT_ANGLE_NORMALIZE(new_heading);
@@ -247,4 +251,24 @@ uint8_t chooseRandomIncrementAvoidance(void)
   }
   return false;
 }
+
+/*
+ * Sets the variable 'heading_increment' intentionally. On the reverse side of the centroid x position.
+ */
+
+
+uint8_t chooseSmartDirectionBasedOnXCentroid(void) // y_c is actually x_c in real life
+{
+  if (y_c < 0){
+    heading_increment = 5.f;
+    VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
+    printf("Turn right");
+  } else {
+    heading_increment = -1* 5.f;
+    VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
+    printf("Turn left");
+  }
+  return false;
+}
+
 
