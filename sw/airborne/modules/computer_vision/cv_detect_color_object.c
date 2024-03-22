@@ -54,6 +54,9 @@ static pthread_mutex_t mutex;
 #ifndef COLOR_OBJECT_DETECTOR_FPS3
 #define COLOR_OBJECT_DETECTOR_FPS3 0 ///< Default FPS (zero means run at camera fps)
 #endif
+#ifndef COLOR_OBJECT_DETECTOR_FPS4
+#define COLOR_OBJECT_DETECTOR_FPS4 0 ///< Default FPS (zero means run at camera fps)
+#endif
 
 // Filter Settings
 uint8_t cod_lum_min1 = 0;
@@ -77,9 +80,17 @@ uint8_t cod_cb_max3 = 0;
 uint8_t cod_cr_min3 = 0;
 uint8_t cod_cr_max3 = 0;
 
+uint8_t cod_lum_min4 = 0;
+uint8_t cod_lum_max4 = 0;
+uint8_t cod_cb_min4 = 0;
+uint8_t cod_cb_max4 = 0;
+uint8_t cod_cr_min4 = 0;
+uint8_t cod_cr_max4 = 0;
+
 bool cod_draw1 = false;
 bool cod_draw2 = false;
 bool cod_draw3 = false;
+bool cod_draw4 = false;
 
 // define global variables
 struct color_object_t {
@@ -115,16 +126,16 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
 
-  for (int i = 3; i >= 1; i--){
+  for (int i = 4; i >= 1; i--){
     if (i == 1){
-      lum_min = cod_lum_min1;
+      lum_min = cod_lum_min1; //
       lum_max = cod_lum_max1;
       cb_min = cod_cb_min1;
       cb_max = cod_cb_max1;
       cr_min = cod_cr_min1;
       cr_max = cod_cr_max1;
       draw = cod_draw1;
-    } else if (i == 2){
+    } else if (i == 2){ // Bright Black (brighter than the wall)
       lum_min = cod_lum_min2;
       lum_max = cod_lum_max2;
       cb_min = cod_cb_min2;
@@ -132,7 +143,7 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min2;
       cr_max = cod_cr_max2;
       draw = cod_draw2;
-    } else if (i == 3){
+    } else if (i == 3){ //Green
       lum_min = cod_lum_min3;
       lum_max = cod_lum_max3;
       cb_min = cod_cb_min3;
@@ -140,9 +151,22 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min3;
       cr_max = cod_cr_max3;
       draw = cod_draw3;
+    } else if (i == 4){ //Dark black (darker than the wall)
+      lum_min = cod_lum_min4;
+      lum_max = cod_lum_max4;
+      cb_min = cod_cb_min4;
+      cb_max = cod_cb_max4;
+      cr_min = cod_cr_min4;
+      cr_max = cod_cr_max4;
+      draw = cod_draw4;
     }
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
     count += count_i;
+    
+    //If green, add double the count, because green is scary
+    if (i == 3){
+      count += count_i;
+    }
     //y_c_sum += y_c;
   }
   //y_c = y_c_sum / 3;
@@ -175,6 +199,15 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min3;
       cr_max = cod_cr_max3;
       draw = cod_draw3;
+      break;
+    case 4:
+      lum_min = cod_lum_min4;
+      lum_max = cod_lum_max4;
+      cb_min = cod_cb_min4;
+      cb_max = cod_cb_max4;
+      cr_min = cod_cr_min4;
+      cr_max = cod_cr_max4;
+      draw = cod_draw4;
       break;
     default:
       return img;
@@ -213,6 +246,12 @@ struct image_t *object_detector3(struct image_t *img, uint8_t camera_id);
 struct image_t *object_detector3(struct image_t *img, uint8_t camera_id __attribute__((unused)))
 {
   return object_detector(img, 3);
+}
+
+struct image_t *object_detector4(struct image_t *img, uint8_t camera_id);
+struct image_t *object_detector4(struct image_t *img, uint8_t camera_id __attribute__((unused)))
+{
+  return object_detector(img, 4);
 }
 
 void color_object_detector_init(void)
@@ -266,6 +305,22 @@ void color_object_detector_init(void)
 
   cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 0);
 #endif
+
+#ifdef COLOR_OBJECT_DETECTOR_CAMERA4
+#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN4
+  cod_lum_min4 = COLOR_OBJECT_DETECTOR_LUM_MIN4;
+  cod_lum_max4 = COLOR_OBJECT_DETECTOR_LUM_MAX4;
+  cod_cb_min4 = COLOR_OBJECT_DETECTOR_CB_MIN4;
+  cod_cb_max4 = COLOR_OBJECT_DETECTOR_CB_MAX4;
+  cod_cr_min4 = COLOR_OBJECT_DETECTOR_CR_MIN4;
+  cod_cr_max4 = COLOR_OBJECT_DETECTOR_CR_MAX4;
+#endif
+#ifdef COLOR_OBJECT_DETECTOR_DRAW4
+  cod_draw4 = COLOR_OBJECT_DETECTOR_DRAW4;
+#endif
+
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA4, object_detector4, COLOR_OBJECT_DETECTOR_FPS4, 0);
+#endif
 }
 
 /*
@@ -292,6 +347,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
                               uint8_t cr_min, uint8_t cr_max)
 {
   uint32_t cnt = 0;
+  uint32_t cunt = 0;
   uint32_t tot_x = 0;
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
@@ -302,20 +358,26 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
    * Then returns the total count of pixels that fall within the range.
    * I've changed it to only multiply once rather than like several thousand times...
    */
-  // Start pixel count
-  uint32_t p = 0;
+  
   int x = 0;
   int y = 0;
+
+  int tol = 30;
+
+
+// Start pixel count
+  uint32_t p = 0;
+  //int tol = 30;
+  int32_t area = img->h * img->w;
   
   // Go through all the pixels
-  while (p < img->h * img->w) {
-    if (x >= ((img->w / 2) - 20) && x <= ((img->w/2) + 20)){
-      //if (y >= 40 && y <= 480){
+  while (p < area) {
+    if (x >= ((img->w / 2) - tol) && x <= ((img->w/2) + tol)){
         //printf("x: %d", x);
         // Check if the color is inside the specified values
         uint8_t *yp, *up, *vp;
         // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
-        uint32_t p2 = 2 * p; 
+        uint32_t p2 = p+p; 
         if (p % 2 == 0) {
           // Even x
           up = &buffer[p2];      // U
@@ -334,7 +396,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
               (*vp >= cr_min ) && (*vp <= cr_max )) {
                   
           // NR: Make more the weight of pixels within central range.
-          if (y >= 210 && y <= 310){
+          if (y >= 205 && y <= 315){   /// 210 & 310
             cnt += 4;
           } else if (y >= 70 && y <= 450) {
             cnt += 2;
@@ -342,7 +404,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
             cnt ++;
           }
           
-          //cnt++;
+          cunt++;
 
           tot_x += x;
           tot_y += y;
@@ -350,8 +412,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
             *yp = 255;  // make pixel brighter in image
           }
         }
-      //}
-    }
+      }
     // NR: Increment pixel
     p ++;
     x ++;
@@ -361,13 +422,12 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     }
   }
   if (cnt > 0) {
-    *p_xc = (int32_t)roundf(tot_x / ((float) cnt) - img->w * 0.5f);
-    *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cnt));
+    *p_xc = (int32_t)roundf(tot_x / ((float) cunt) - img->w * 0.5f);
+    *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cunt));
   } else {
     *p_xc = 0;
     *p_yc = 0;
   }
-  printf("Y_Centroid_From_CV_file: %d", *p_yc);
   return cnt;
 }
 

@@ -34,6 +34,14 @@
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="110"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="120"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="140"/>
+
+      <!-- Detect darkblack -->
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX4" value="24"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX4" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX4" value="255"/>
     </target>
     <target name="nps" board="pc">
       <module name="fdm" type="gazebo"/>
@@ -63,6 +71,14 @@
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX3" value="125"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN3" value="100"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX3" value="140"/>
+
+      <!-- Detect darkblack -->
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX4" value="10"/><!--also don't use this in the sim-->
+      <define name="COLOR_OBJECT_DETECTOR_CB_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CB_MAX4" value="5"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MIN4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_CR_MAX4" value="5"/>
 
     </target>
     <define name="ARRIVED_AT_WAYPOINT" value="0.5"/><!-- Detect arrival at waypoint when within 0.5m -->
@@ -103,6 +119,10 @@
       <define name="COLOR_OBJECT_DETECTOR_CAMERA3" value="front_camera"/>
       <define name="COLOR_OBJECT_DETECTOR_FPS3" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_DRAW3" value="1"/>
+
+      <define name="COLOR_OBJECT_DETECTOR_CAMERA4" value="front_camera"/>
+      <define name="COLOR_OBJECT_DETECTOR_FPS4" value="0"/>
+      <define name="COLOR_OBJECT_DETECTOR_DRAW4" value="1"/>
     </module>
     <module name="orange_avoider">
       <define name="ORANGE_AVOIDER_VISUAL_DETECTION_ID" value="COLOR_OBJECT_DETECTION1_ID"/> 

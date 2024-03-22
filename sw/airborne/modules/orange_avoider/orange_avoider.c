@@ -52,7 +52,7 @@ enum navigation_state_t {
 };
 
 // define settings
-float oa_color_count_frac = 0.27f;
+float oa_color_count_frac = 0.41f;
 
 // define and initialise global variables
 enum navigation_state_t navigation_state = SEARCH_FOR_SAFE_HEADING;
@@ -61,6 +61,8 @@ int16_t obstacle_free_confidence = 0;   // a measure of how certain we are that 
 float heading_increment = 5.f;          // heading angle increment [deg]
 float maxDistance = 2.25;               // max waypoint displacement [m]
 int16_t y_c = 0;
+int loop_trap_counter = 0;
+int prev_dir;
 
 const int16_t max_trajectory_confidence = 5; // number of consecutive negative object detections to be sure we are obstacle free
 
@@ -108,7 +110,7 @@ void orange_avoider_periodic(void)
   }
 
   // compute current color thresholds
-  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h /3; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
+  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h /4; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
 
   VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
 
@@ -135,7 +137,7 @@ void orange_avoider_periodic(void)
       } else {
         moveWaypointForward(WP_GOAL, moveDistance);
       }
-      printf("centroid: %d", y_c);
+      //printf("centroid: %d", y_c);
 
       break;
     case OBSTACLE_FOUND:
@@ -146,8 +148,8 @@ void orange_avoider_periodic(void)
       // randomly select new search direction
       //chooseRandomIncrementAvoidance();
       //////////////////////////////////// change above to intentionally go away from centroid position. Away from wall if possible. May not be possible.
-      printf("Centroid: %d", y_c);
       chooseSmartDirectionBasedOnXCentroid();
+      //printf("Centroid: %d", y_c);
       navigation_state = SEARCH_FOR_SAFE_HEADING;
 
       break;
@@ -259,15 +261,34 @@ uint8_t chooseRandomIncrementAvoidance(void)
 
 uint8_t chooseSmartDirectionBasedOnXCentroid(void) // y_c is actually x_c in real life
 {
-  if (y_c < 0){
-    heading_increment = 5.f;
+  if (y_c > 0){
+    heading_increment = 5.f; //turn right
     VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
-    printf("Turn right");
+
+    if (prev_dir == 1){
+      loop_trap_counter ++;
+    } else {
+      loop_trap_counter = 0;
+    }
+    prev_dir = 0; // 0 = right
+
   } else {
-    heading_increment = -1* 5.f;
+    heading_increment = -1* 5.f; //turn left
     VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
-    printf("Turn left");
+
+    if (prev_dir == 0){
+      loop_trap_counter ++;
+    } else {
+      loop_trap_counter = 0;
+    }
+    prev_dir = 1; // 1 = left
   }
+
+  if (loop_trap_counter >= 4){ //On the Xth repitition of repeat / trap loop {
+    heading_increment *= -1.f;
+  }
+
+
   return false;
 }
 
