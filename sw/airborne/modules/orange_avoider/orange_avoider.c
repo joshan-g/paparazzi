@@ -91,7 +91,7 @@ static void color_detection_cb(uint8_t __attribute__((unused)) sender_id,
  */
 void orange_avoider_init(void)
 {
-  // Initialise random values
+    // Initialise random values
   srand(time(NULL));
   chooseRandomIncrementAvoidance(); // NR: Intentionaly keeping random here at init.
 
@@ -108,12 +108,12 @@ void orange_avoider_periodic(void)
   if(!autopilot_in_flight()){
     return;
   }
-
+  
   // compute current color thresholds
   int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h /4; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
 
   VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
-
+  
   // update our safe confidence using color threshold
   if(color_count < color_count_threshold){
     obstacle_free_confidence++;
@@ -138,7 +138,7 @@ void orange_avoider_periodic(void)
         moveWaypointForward(WP_GOAL, moveDistance);
       }
       //printf("centroid: %d", y_c);
-
+      
       break;
     case OBSTACLE_FOUND:
       // stop
@@ -161,11 +161,11 @@ void orange_avoider_periodic(void)
         increase_nav_heading(heading_increment); // NR: This makes it turn slightly further after declaring itself to move to forward.
         navigation_state = SAFE;
       }
-      break;
+            break;
     case OUT_OF_BOUNDS:
       increase_nav_heading(heading_increment);
       moveWaypointForward(WP_TRAJECTORY, 1.5f);
-
+      
       if (InsideObstacleZone(WaypointX(WP_TRAJECTORY),WaypointY(WP_TRAJECTORY))){
         // add offset to head back into arena
         increase_nav_heading(heading_increment);

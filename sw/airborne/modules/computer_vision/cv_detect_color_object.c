@@ -99,7 +99,7 @@ struct color_object_t {
   uint32_t color_count;
   bool updated;
 };
-struct color_object_t global_filters[2];
+struct color_object_t global_filters[4];
 
 // Function
 uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
@@ -359,12 +359,14 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
    * I've changed it to only multiply once rather than like several thousand times...
    */
   
+
+
+  
   int x = 0;
   int y = 0;
-
+  
   int tol = 30;
-
-
+  
 // Start pixel count
   uint32_t p = 0;
   //int tol = 30;
@@ -421,20 +423,20 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       y ++;
     }
   }
-  if (cnt > 0) {
+    if (cnt > 0) {
     *p_xc = (int32_t)roundf(tot_x / ((float) cunt) - img->w * 0.5f);
     *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cunt));
   } else {
     *p_xc = 0;
     *p_yc = 0;
   }
-  return cnt;
+    return cnt;
 }
 
 
 void color_object_detector_periodic(void)
 {
-  static struct color_object_t local_filters[2];
+  static struct color_object_t local_filters[4];
   pthread_mutex_lock(&mutex);
   memcpy(local_filters, global_filters, 2*sizeof(struct color_object_t));
   pthread_mutex_unlock(&mutex);
