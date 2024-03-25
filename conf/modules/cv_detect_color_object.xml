@@ -45,6 +45,17 @@
     <define name="COLOR_OBJECT_DETECTOR_CR_MIN4" value="0" description="Filter 4 min red chroma"/>
     <define name="COLOR_OBJECT_DETECTOR_CR_MAX4" value="0" description="Filter 4 max red chroma"/>
     <define name="COLOR_OBJECT_DETECTOR_DRAW4" value="FALSE|TRUE" description="Whether or not to draw on image"/>
+
+
+    <define name="COLOR_OBJECT_DETECTOR_CAMERA5" value="front_camera|bottom_camera" description="Video device to use"/>
+    <define name="COLOR_OBJECT_DETECTOR_FPS5" value="0" description="Desired FPS (0: camera rate)"/>
+    <define name="COLOR_OBJECT_DETECTOR_LUM_MIN5" value="0" description="Filter 5 min luminance"/>
+    <define name="COLOR_OBJECT_DETECTOR_LUM_MAX5" value="0" description="Filter 5 max luminance"/>
+    <define name="COLOR_OBJECT_DETECTOR_CB_MIN5" value="0" description="Filter 5 min blue chroma"/>
+    <define name="COLOR_OBJECT_DETECTOR_CB_MAX5" value="0" description="Filter 5 max blue chroma"/>
+    <define name="COLOR_OBJECT_DETECTOR_CR_MIN5" value="0" description="Filter 5 min red chroma"/>
+    <define name="COLOR_OBJECT_DETECTOR_CR_MAX5" value="0" description="Filter 5 max red chroma"/>
+    <define name="COLOR_OBJECT_DETECTOR_DRAW5" value="FALSE|TRUE" description="Whether or not to draw on image"/>
   </doc>
 
   <settings>

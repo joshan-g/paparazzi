@@ -57,6 +57,9 @@ static pthread_mutex_t mutex;
 #ifndef COLOR_OBJECT_DETECTOR_FPS4
 #define COLOR_OBJECT_DETECTOR_FPS4 0 ///< Default FPS (zero means run at camera fps)
 #endif
+#ifndef COLOR_OBJECT_DETECTOR_FPS5
+#define COLOR_OBJECT_DETECTOR_FPS5 0 ///< Default FPS (zero means run at camera fps)
+#endif
 
 // Filter Settings
 uint8_t cod_lum_min1 = 0;
@@ -87,10 +90,20 @@ uint8_t cod_cb_max4 = 0;
 uint8_t cod_cr_min4 = 0;
 uint8_t cod_cr_max4 = 0;
 
+uint8_t cod_lum_min5 = 0;
+uint8_t cod_lum_max5 = 0;
+uint8_t cod_cb_min5 = 0;
+uint8_t cod_cb_max5 = 0;
+uint8_t cod_cr_min5 = 0;
+uint8_t cod_cr_max5 = 0;
+
 bool cod_draw1 = false;
 bool cod_draw2 = false;
 bool cod_draw3 = false;
 bool cod_draw4 = false;
+bool cod_draw5 = false;
+
+
 
 // define global variables
 struct color_object_t {
@@ -126,7 +139,7 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
 
-  for (int i = 4; i >= 1; i--){
+  for (int i = 5; i >= 1; i--){
     if (i == 1){
       lum_min = cod_lum_min1; //
       lum_max = cod_lum_max1;
@@ -159,6 +172,14 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min4;
       cr_max = cod_cr_max4;
       draw = cod_draw4;
+    } else if (i == 5){ // white
+      lum_min = cod_lum_min5;
+      lum_max = cod_lum_max5;
+      cb_min = cod_cb_min5;
+      cb_max = cod_cb_max5;
+      cr_min = cod_cr_min5;
+      cr_max = cod_cr_max5;
+      draw = cod_draw5;
     }
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
     count += count_i;
@@ -254,6 +275,12 @@ struct image_t *object_detector4(struct image_t *img, uint8_t camera_id __attrib
   return object_detector(img, 4);
 }
 
+struct image_t *object_detector5(struct image_t *img, uint8_t camera_id);
+struct image_t *object_detector5(struct image_t *img, uint8_t camera_id __attribute__((unused)))
+{
+  return object_detector(img, 5);
+}
+
 void color_object_detector_init(void)
 {
   memset(global_filters, 0, 2*sizeof(struct color_object_t));
@@ -321,6 +348,23 @@ void color_object_detector_init(void)
 
   cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA4, object_detector4, COLOR_OBJECT_DETECTOR_FPS4, 0);
 #endif
+
+#ifdef COLOR_OBJECT_DETECTOR_CAMERA5
+#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN5
+  cod_lum_min5 = COLOR_OBJECT_DETECTOR_LUM_MIN5;
+  cod_lum_max5 = COLOR_OBJECT_DETECTOR_LUM_MAX5;
+  cod_cb_min5 = COLOR_OBJECT_DETECTOR_CB_MIN5;
+  cod_cb_max5 = COLOR_OBJECT_DETECTOR_CB_MAX5;
+  cod_cr_min5 = COLOR_OBJECT_DETECTOR_CR_MIN5;
+  cod_cr_max5 = COLOR_OBJECT_DETECTOR_CR_MAX5;
+#endif
+#ifdef COLOR_OBJECT_DETECTOR_DRAW5
+  cod_draw3 = COLOR_OBJECT_DETECTOR_DRAW5;
+#endif
+
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA5, object_detector5, COLOR_OBJECT_DETECTOR_FPS5, 0);
+#endif
+
 }
 
 /*

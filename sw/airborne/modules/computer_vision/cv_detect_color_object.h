@@ -60,10 +60,18 @@ extern uint8_t cod_cb_max4;
 extern uint8_t cod_cr_min4;
 extern uint8_t cod_cr_max4;
 
+extern uint8_t cod_lum_min5;
+extern uint8_t cod_lum_max5;
+extern uint8_t cod_cb_min5;
+extern uint8_t cod_cb_max5;
+extern uint8_t cod_cr_min5;
+extern uint8_t cod_cr_max5;
+
 extern bool cod_draw1;
 extern bool cod_draw2;
 extern bool cod_draw3;
 extern bool cod_draw4;
+extern bool cod_draw5;
 
 
 // Module functions
