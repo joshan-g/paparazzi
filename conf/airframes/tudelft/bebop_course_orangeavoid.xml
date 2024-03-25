@@ -91,7 +91,7 @@
 
       <!-- Detect white -->
       <define name="COLOR_OBJECT_DETECTOR_LUM_MIN5" value="220"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX5" value="255"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX5" value="240"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MIN5" value="110"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX5" value="140"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN5" value="110"/>
