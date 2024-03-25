@@ -181,7 +181,11 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_max = cod_cr_max5;
       draw = cod_draw5;
     }
-    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
+    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min1, lum_max1, cb_min1, cb_max1, cr_min1, cr_max1,
+    lum_min2, lum_max2, cb_min2, cb_max2, cr_min2, cr_max2,
+    lum_min3, lum_max3, cb_min3, cb_max3, cr_min3, cr_max3,
+    lum_min4, lum_max4, cb_min4, cb_max4, cr_min4, cr_max4,
+    lum_min5, lum_max5, cb_min5, cb_max5, cr_min5, cr_max5);
     count += count_i;
     
     //If green, add double the count, because green is scary
@@ -388,7 +392,7 @@ void color_object_detector_init(void)
 uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
                               uint8_t lum_min, uint8_t lum_max,
                               uint8_t cb_min, uint8_t cb_max,
-                              uint8_t cr_min, uint8_t cr_max)
+                              uint8_t cr_min, uint8_t cr_max,)
 {
   uint32_t cnt = 0;
   uint32_t cunt = 0;
@@ -437,11 +441,34 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           vp = &buffer[p2];      // V
           yp = &buffer[p2 + 1];  // Y2
         }
-        if ( (*yp >= lum_min) && (*yp <= lum_max) &&
-              (*up >= cb_min ) && (*up <= cb_max ) &&
-              (*vp >= cr_min ) && (*vp <= cr_max )) {
+        if ((
+              (*yp >= lum_min1 ) && (*yp <= lum_max1 ) &&
+              (*up >= cb_min1 ) && (*up <= cb_max1 ) &&
+              (*vp >= cr_min1 ) && (*vp <= cr_max1 )
+            ) ||
+            (
+              (*yp >= lum_min2 ) && (*yp <= lum_max2 ) &&
+              (*up >= cb_min2 ) && (*up <= cb_max2 ) &&
+              (*vp >= cr_min2 ) && (*vp <= cr_max2 )
+            ) ||
+            (
+              (*yp >= lum_min3 ) && (*yp <= lum_max3 ) &&
+              (*up >= cb_min3 ) && (*up <= cb_max3 ) &&
+              (*vp >= cr_min3 ) && (*vp <= cr_max3 )
+            ) ||
+            (
+              (*yp >= lum_min4 ) && (*yp <= lum_max4 ) &&
+              (*up >= cb_min4 ) && (*up <= cb_max4 ) &&
+              (*vp >= cr_min4 ) && (*vp <= cr_max4 )
+            ) ||
+            (
+              (*yp >= lum_min5 ) && (*yp <= lum_max5 ) &&
+              (*up >= cb_min5 ) && (*up <= cb_max5 ) &&
+              (*vp >= cr_min5 ) && (*vp <= cr_max5 )
+            )
+            ) {
                   
-          // NR: Make more the weight of pixels within central range.
+          // NR: Make more the weight of pixels within central rnge.
           if (y >= 205 && y <= 315){   /// 210 & 310
             cnt += 4;
           } else if (y >= 70 && y <= 450) {
