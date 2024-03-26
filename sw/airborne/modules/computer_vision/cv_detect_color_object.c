@@ -163,9 +163,9 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
     count += count_i;
     
-    //If green, add double the count, because green is scary
+    //If green, triple the count, because green is scary. E.g. trees have less density.
     if (i == 3){
-      count += count_i;
+      count += (count_i + count_i); // NR: I think it's better to use addition here because multiplication badness?
     }
     //y_c_sum += y_c;
   }
@@ -418,7 +418,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     // NR: Increment pixel
     p ++;
     x ++;
-    if (x > img->w){
+    if (x >= img->w){ // NR: Wow i see the issue!!! This was x > img->w... Now that it is x >= img->w, it should correctly take the line across the middle
       x = 0;
       y ++;
     }
