@@ -484,7 +484,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           cnt_column += density_column;
         }
       } else if (colour == 5){ // High Lum
-        if (density_column > 30){
+        if (density_column > 50){ ///blocks out the background, but turns when close to white board
           cnt_column += density_column;
         } 
       } else{
@@ -501,6 +501,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       } else {
         cnt ++;
       }
+      //printf("check density: %d", density_column);
       cnt_column = 0;
       density_column = 0;
     }
