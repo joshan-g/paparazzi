@@ -421,8 +421,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   */
   
 
-  int x = 0;
-  int y = 0;
+  uint32_t x = 0;
+  uint32_t y = 0;
   
   int tol = 30;
   
@@ -434,8 +434,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t density_column = 0;
   uint32_t cnt_column = 0;
 
-  uint32_t x_min = img->w / 2 - tol
-  uint32_t x_max = img->w / 2 + tol
+  uint32_t x_min = img->w / 2 - tol;
+  uint32_t x_max = img->w / 2 + tol;
 
 
   // Go through all the pixels
@@ -505,7 +505,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       } else {
         cnt ++;
       }
-      //printf("check density: %d", density_column);
+      ////////////////////////////printf("check density: %d", density_column);
       cnt_column = 0;
       density_column = 0;
     }
