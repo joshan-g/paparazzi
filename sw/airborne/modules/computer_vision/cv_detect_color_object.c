@@ -434,8 +434,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t density_column = 0;
   uint32_t cnt_column = 0;
 
-  uint32_t x_min = img->w / 2 - tol
-  uint32_t x_max = img->w / 2 + tol
+  uint32_t x_min = img->w / 2 - tol;
+  uint32_t x_max = img->w / 2 + tol;
 
 
   // Go through all the pixels
