@@ -38,72 +38,26 @@
 
 #define PRINT(string,...) fprintf(stderr, "[object_detector->%s()] " string,__FUNCTION__ , ##__VA_ARGS__)
 #if OBJECT_DETECTOR_VERBOSE
-#define VERBOSE_PRINT PRINT
+  #define VERBOSE_PRINT PRINT
 #else
-#define VERBOSE_PRINT(...)
+  #define VERBOSE_PRINT(...)
 #endif
 
 static pthread_mutex_t mutex;
 
-#ifndef COLOR_OBJECT_DETECTOR_FPS1
-#define COLOR_OBJECT_DETECTOR_FPS1 0 ///< Default FPS (zero means run at camera fps)
-#endif
-#ifndef COLOR_OBJECT_DETECTOR_FPS2
-#define COLOR_OBJECT_DETECTOR_FPS2 0 ///< Default FPS (zero means run at camera fps)
-#endif
-#ifndef COLOR_OBJECT_DETECTOR_FPS3
-#define COLOR_OBJECT_DETECTOR_FPS3 0 ///< Default FPS (zero means run at camera fps)
-#endif
-#ifndef COLOR_OBJECT_DETECTOR_FPS4
-#define COLOR_OBJECT_DETECTOR_FPS4 0 ///< Default FPS (zero means run at camera fps)
-#endif
-#ifndef COLOR_OBJECT_DETECTOR_FPS5
-#define COLOR_OBJECT_DETECTOR_FPS5 0 ///< Default FPS (zero means run at camera fps)
+#ifndef COLOR_OBJECT_DETECTOR_FPS
+  #define COLOR_OBJECT_DETECTOR_FPS 0 ///< Default FPS (zero means run at camera fps)
 #endif
 
-// Filter Settings
-uint8_t cod_lum_min1 = 0;
-uint8_t cod_lum_max1 = 0;
-uint8_t cod_cb_min1 = 0;
-uint8_t cod_cb_max1 = 0;
-uint8_t cod_cr_min1 = 0;
-uint8_t cod_cr_max1 = 0;
+// Filter Setting initialization
+uint8_t cod_lum_min[] = {0, 0, 0, 0};
+uint8_t cod_lum_max[] = {0, 0, 0, 0};
+uint8_t cod_cb_min[] = {0, 0, 0, 0};
+uint8_t cod_cb_max[] = {0, 0, 0, 0};
+uint8_t cod_cr_min[] = {0, 0, 0, 0};
+uint8_t cod_cr_max[] = {0, 0, 0, 0};
 
-uint8_t cod_lum_min2 = 0;
-uint8_t cod_lum_max2 = 0;
-uint8_t cod_cb_min2 = 0;
-uint8_t cod_cb_max2 = 0;
-uint8_t cod_cr_min2 = 0;
-uint8_t cod_cr_max2 = 0;
-
-uint8_t cod_lum_min3 = 0;
-uint8_t cod_lum_max3 = 0;
-uint8_t cod_cb_min3 = 0;
-uint8_t cod_cb_max3 = 0;
-uint8_t cod_cr_min3 = 0;
-uint8_t cod_cr_max3 = 0;
-
-uint8_t cod_lum_min4 = 0;
-uint8_t cod_lum_max4 = 0;
-uint8_t cod_cb_min4 = 0;
-uint8_t cod_cb_max4 = 0;
-uint8_t cod_cr_min4 = 0;
-uint8_t cod_cr_max4 = 0;
-
-uint8_t cod_lum_min5 = 0;
-uint8_t cod_lum_max5 = 0;
-uint8_t cod_cb_min5 = 0;
-uint8_t cod_cb_max5 = 0;
-uint8_t cod_cr_min5 = 0;
-uint8_t cod_cr_max5 = 0;
-
-bool cod_draw1 = false;
-bool cod_draw2 = false;
-bool cod_draw3 = false;
-bool cod_draw4 = false;
-bool cod_draw5 = false;
-
-
+bool cod_draw[] = {false, false, false, false};
 
 // define global variables
 struct color_object_t {
@@ -112,13 +66,13 @@ struct color_object_t {
   uint32_t color_count;
   bool updated;
 };
-struct color_object_t global_filters[4];
+struct color_object_t global_filters[1];
 
 // Function
-uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
-                              uint8_t lum_min, uint8_t lum_max,
-                              uint8_t cb_min, uint8_t cb_max,
-                              uint8_t cr_min, uint8_t cr_max);
+uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw[],
+                              uint8_t lum_min[], uint8_t lum_max[],
+                              uint8_t cb_min[], uint8_t cb_max[],
+                              uint8_t cr_min[], uint8_t cr_max[]);
 
 /*
  * object_detector
@@ -126,249 +80,83 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
  * @param filter - which detection filter to process
  * @return img
  */
-static struct image_t *object_detector(struct image_t *img, uint8_t filter)
+static struct image_t *object_detector(struct image_t *img)
 {
-  uint8_t lum_min, lum_max;
-  uint8_t cb_min, cb_max;
-  uint8_t cr_min, cr_max;
-  bool draw;
-
-  uint32_t count = 0;
-  uint32_t count_i = 0;
+  uint8_t lum_min[], lum_max[];
+  uint8_t cb_min[], cb_max[];
+  uint8_t cr_min[], cr_max[];
+  bool draw[];
   
-  //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
-
-  for (int i = 5; i >= 1; i--){
-    if (i == 1){
-      lum_min = cod_lum_min1; //
-      lum_max = cod_lum_max1;
-      cb_min = cod_cb_min1;
-      cb_max = cod_cb_max1;
-      cr_min = cod_cr_min1;
-      cr_max = cod_cr_max1;
-      draw = cod_draw1;
-    } else if (i == 2){ // Bright Black (brighter than the wall)
-      lum_min = cod_lum_min2;
-      lum_max = cod_lum_max2;
-      cb_min = cod_cb_min2;
-      cb_max = cod_cb_max2;
-      cr_min = cod_cr_min2;
-      cr_max = cod_cr_max2;
-      draw = cod_draw2;
-    } else if (i == 3){ //Green
-      lum_min = cod_lum_min3;
-      lum_max = cod_lum_max3;
-      cb_min = cod_cb_min3;
-      cb_max = cod_cb_max3;
-      cr_min = cod_cr_min3;
-      cr_max = cod_cr_max3;
-      draw = cod_draw3;
-    } else if (i == 4){ //Dark black (darker than the wall)
-      lum_min = cod_lum_min4;
-      lum_max = cod_lum_max4;
-      cb_min = cod_cb_min4;
-      cb_max = cod_cb_max4;
-      cr_min = cod_cr_min4;
-      cr_max = cod_cr_max4;
-      draw = cod_draw4;
-    } else if (i == 5){ // white
-      lum_min = cod_lum_min5;
-      lum_max = cod_lum_max5;
-      cb_min = cod_cb_min5;
-      cb_max = cod_cb_max5;
-      cr_min = cod_cr_min5;
-      cr_max = cod_cr_max5;
-      draw = cod_draw5;
-    }
-    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min1, lum_max1, cb_min1, cb_max1, cr_min1, cr_max1,
-    lum_min2, lum_max2, cb_min2, cb_max2, cr_min2, cr_max2,
-    lum_min3, lum_max3, cb_min3, cb_max3, cr_min3, cr_max3,
-    lum_min4, lum_max4, cb_min4, cb_max4, cr_min4, cr_max4,
-    lum_min5, lum_max5, cb_min5, cb_max5, cr_min5, cr_max5);
-    count += count_i;
-    
-    //If green, add double the count, because green is scary
-    if (i == 3){
-      count += count_i;
-    }
-    //y_c_sum += y_c;
-  }
-  //y_c = y_c_sum / 3;
-//The above for loop sums the count of all 3. 
-  /*
-  switch (filter){
-    case 1:
-      lum_min = cod_lum_min1;
-      lum_max = cod_lum_max1;
-      cb_min = cod_cb_min1;
-      cb_max = cod_cb_max1;
-      cr_min = cod_cr_min1;
-      cr_max = cod_cr_max1;
-      draw = cod_draw1;
-      break;
-    case 2:
-      lum_min = cod_lum_min2;
-      lum_max = cod_lum_max2;
-      cb_min = cod_cb_min2;
-      cb_max = cod_cb_max2;
-      cr_min = cod_cr_min2;
-      cr_max = cod_cr_max2;
-      draw = cod_draw2;
-      break;
-    case 3:
-      lum_min = cod_lum_min3;
-      lum_max = cod_lum_max3;
-      cb_min = cod_cb_min3;
-      cb_max = cod_cb_max3;
-      cr_min = cod_cr_min3;
-      cr_max = cod_cr_max3;
-      draw = cod_draw3;
-      break;
-    case 4:
-      lum_min = cod_lum_min4;
-      lum_max = cod_lum_max4;
-      cb_min = cod_cb_min4;
-      cb_max = cod_cb_max4;
-      cr_min = cod_cr_min4;
-      cr_max = cod_cr_max4;
-      draw = cod_draw4;
-      break;
-    default:
-      return img;
-  };*/
-
-  //int32_t x_c, y_c;
+  
+  // TODO -- reimplement green scary
 
   // Filter and find centroid
-  //uint32_t count = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
+  uint32_t count = find_object_centroid(img, &x_c, &y_c, draw[], lum_min[], lum_max[], cb_min[], cb_max[], cr_min[], cr_max[]);
   VERBOSE_PRINT("Color count %d: %u, threshold %u, x_c %d, y_c %d\n", camera, object_count, count_threshold, x_c, y_c);
   VERBOSE_PRINT("centroid %d: (%d, %d) r: %4.2f a: %4.2f\n", camera, x_c, y_c,
         hypotf(x_c, y_c) / hypotf(img->w * 0.5, img->h * 0.5), RadOfDeg(atan2f(y_c, x_c)));
   pthread_mutex_lock(&mutex);
-  global_filters[filter-1].color_count = count;
-  global_filters[filter-1].x_c = x_c;
-  global_filters[filter-1].y_c = y_c;
-  global_filters[filter-1].updated = true;
+  global_filters[0].color_count = count;
+  global_filters[0].x_c = x_c;
+  global_filters[0].y_c = y_c;
+  global_filters[0].updated = true;
   pthread_mutex_unlock(&mutex);
 
   return img;
 }
 
-struct image_t *object_detector1(struct image_t *img, uint8_t camera_id);
-struct image_t *object_detector1(struct image_t *img, uint8_t camera_id __attribute__((unused)))
+struct image_t *object_detector(struct image_t *img, uint8_t camera_id __attribute__((unused)))
 {
-  return object_detector(img, 1);
-}
-
-struct image_t *object_detector2(struct image_t *img, uint8_t camera_id);
-struct image_t *object_detector2(struct image_t *img, uint8_t camera_id __attribute__((unused)))
-{
-  return object_detector(img, 2);
-}
-
-struct image_t *object_detector3(struct image_t *img, uint8_t camera_id);
-struct image_t *object_detector3(struct image_t *img, uint8_t camera_id __attribute__((unused)))
-{
-  return object_detector(img, 3);
-}
-
-struct image_t *object_detector4(struct image_t *img, uint8_t camera_id);
-struct image_t *object_detector4(struct image_t *img, uint8_t camera_id __attribute__((unused)))
-{
-  return object_detector(img, 4);
-}
-
-struct image_t *object_detector5(struct image_t *img, uint8_t camera_id);
-struct image_t *object_detector5(struct image_t *img, uint8_t camera_id __attribute__((unused)))
-{
-  return object_detector(img, 5);
+  return object_detector(img);
 }
 
 void color_object_detector_init(void)
 {
   memset(global_filters, 0, 2*sizeof(struct color_object_t));
   pthread_mutex_init(&mutex, NULL);
-#ifdef COLOR_OBJECT_DETECTOR_CAMERA1
-#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN1
-  cod_lum_min1 = COLOR_OBJECT_DETECTOR_LUM_MIN1; // Y
-  cod_lum_max1 = COLOR_OBJECT_DETECTOR_LUM_MAX1; // Y
-  cod_cb_min1 = COLOR_OBJECT_DETECTOR_CB_MIN1; //min U   // CB stands for colour blue
-  cod_cb_max1 = COLOR_OBJECT_DETECTOR_CB_MAX1; //max U
-  cod_cr_min1 = COLOR_OBJECT_DETECTOR_CR_MIN1; //min V    //CR stands for colour red.
-  cod_cr_max1 = COLOR_OBJECT_DETECTOR_CR_MAX1; //max V
-#endif
-#ifdef COLOR_OBJECT_DETECTOR_DRAW1
-  cod_draw1 = COLOR_OBJECT_DETECTOR_DRAW1;
-#endif
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA1, object_detector1, COLOR_OBJECT_DETECTOR_FPS1, 0);
-#endif
+  #ifdef COLOR_OBJECT_DETECTOR_CAMERA
+    #ifdef COLOR_OBJECT_DETECTOR_LUM_MIN
+      cod_lum_min[0] = COLOR_OBJECT_DETECTOR_LUM_MIN1;
+      cod_lum_min[1] = COLOR_OBJECT_DETECTOR_LUM_MIN2;
+      cod_lum_min[2] = COLOR_OBJECT_DETECTOR_LUM_MIN3;
+      cod_lum_min[3] = COLOR_OBJECT_DETECTOR_LUM_MIN4;
 
-#ifdef COLOR_OBJECT_DETECTOR_CAMERA2
-#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN2
-  cod_lum_min2 = COLOR_OBJECT_DETECTOR_LUM_MIN2;
-  cod_lum_max2 = COLOR_OBJECT_DETECTOR_LUM_MAX2;
-  cod_cb_min2 = COLOR_OBJECT_DETECTOR_CB_MIN2;
-  cod_cb_max2 = COLOR_OBJECT_DETECTOR_CB_MAX2;
-  cod_cr_min2 = COLOR_OBJECT_DETECTOR_CR_MIN2;
-  cod_cr_max2 = COLOR_OBJECT_DETECTOR_CR_MAX2;
-#endif
-#ifdef COLOR_OBJECT_DETECTOR_DRAW2
-  cod_draw2 = COLOR_OBJECT_DETECTOR_DRAW2;
-#endif
+      cod_lum_max[0] = COLOR_OBJECT_DETECTOR_LUM_MAX1;
+      cod_lum_max[1] = COLOR_OBJECT_DETECTOR_LUM_MAX2;
+      cod_lum_max[2] = COLOR_OBJECT_DETECTOR_LUM_MAX3;
+      cod_lum_max[3] = COLOR_OBJECT_DETECTOR_LUM_MAX4;
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA2, object_detector2, COLOR_OBJECT_DETECTOR_FPS2, 0);
-#endif
+      cod_cb_min[0] = COLOR_OBJECT_DETECTOR_CB_MIN1;
+      cod_cb_min[1] = COLOR_OBJECT_DETECTOR_CB_MIN2;
+      cod_cb_min[2] = COLOR_OBJECT_DETECTOR_CB_MIN3;
+      cod_cb_min[3] = COLOR_OBJECT_DETECTOR_CB_MIN4;
+      
+      cod_cb_max[0] = COLOR_OBJECT_DETECTOR_CB_MAX1;
+      cod_cb_max[1] = COLOR_OBJECT_DETECTOR_CB_MAX2;
+      cod_cb_max[2] = COLOR_OBJECT_DETECTOR_CB_MAX3;
+      cod_cb_max[3] = COLOR_OBJECT_DETECTOR_CB_MAX4;
 
-#ifdef COLOR_OBJECT_DETECTOR_CAMERA3
-#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN3
-  cod_lum_min3 = COLOR_OBJECT_DETECTOR_LUM_MIN3;
-  cod_lum_max3 = COLOR_OBJECT_DETECTOR_LUM_MAX3;
-  cod_cb_min3 = COLOR_OBJECT_DETECTOR_CB_MIN3;
-  cod_cb_max3 = COLOR_OBJECT_DETECTOR_CB_MAX3;
-  cod_cr_min3 = COLOR_OBJECT_DETECTOR_CR_MIN3;
-  cod_cr_max3 = COLOR_OBJECT_DETECTOR_CR_MAX3;
-#endif
-#ifdef COLOR_OBJECT_DETECTOR_DRAW3
-  cod_draw3 = COLOR_OBJECT_DETECTOR_DRAW3;
-#endif
+      
+      cod_cr_min[0] = COLOR_OBJECT_DETECTOR_CR_MIN1;
+      cod_cr_min[1] = COLOR_OBJECT_DETECTOR_CR_MIN2;
+      cod_cr_min[2] = COLOR_OBJECT_DETECTOR_CR_MIN3;
+      cod_cr_min[3] = COLOR_OBJECT_DETECTOR_CR_MIN4;
 
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA3, object_detector3, COLOR_OBJECT_DETECTOR_FPS3, 0);
-#endif
-
-#ifdef COLOR_OBJECT_DETECTOR_CAMERA4
-#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN4
-  cod_lum_min4 = COLOR_OBJECT_DETECTOR_LUM_MIN4;
-  cod_lum_max4 = COLOR_OBJECT_DETECTOR_LUM_MAX4;
-  cod_cb_min4 = COLOR_OBJECT_DETECTOR_CB_MIN4;
-  cod_cb_max4 = COLOR_OBJECT_DETECTOR_CB_MAX4;
-  cod_cr_min4 = COLOR_OBJECT_DETECTOR_CR_MIN4;
-  cod_cr_max4 = COLOR_OBJECT_DETECTOR_CR_MAX4;
-#endif
-#ifdef COLOR_OBJECT_DETECTOR_DRAW4
-  cod_draw4 = COLOR_OBJECT_DETECTOR_DRAW4;
-#endif
-
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA4, object_detector4, COLOR_OBJECT_DETECTOR_FPS4, 0);
-#endif
-
-#ifdef COLOR_OBJECT_DETECTOR_CAMERA5
-#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN5
-  cod_lum_min5 = COLOR_OBJECT_DETECTOR_LUM_MIN5;
-  cod_lum_max5 = COLOR_OBJECT_DETECTOR_LUM_MAX5;
-  cod_cb_min5 = COLOR_OBJECT_DETECTOR_CB_MIN5;
-  cod_cb_max5 = COLOR_OBJECT_DETECTOR_CB_MAX5;
-  cod_cr_min5 = COLOR_OBJECT_DETECTOR_CR_MIN5;
-  cod_cr_max5 = COLOR_OBJECT_DETECTOR_CR_MAX5;
-#endif
-#ifdef COLOR_OBJECT_DETECTOR_DRAW5
-  cod_draw3 = COLOR_OBJECT_DETECTOR_DRAW5;
-#endif
-
-  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA5, object_detector5, COLOR_OBJECT_DETECTOR_FPS5, 0);
-#endif
-
+      cod_cr_max[0] = COLOR_OBJECT_DETECTOR_CR_MAX1;
+      cod_cr_max[1] = COLOR_OBJECT_DETECTOR_CR_MAX2;
+      cod_cr_max[2] = COLOR_OBJECT_DETECTOR_CR_MAX3;
+      cod_cr_max[3] = COLOR_OBJECT_DETECTOR_CR_MAX4;
+    #endif
+    #ifdef COLOR_OBJECT_DETECTOR_DRAW
+      cod_draw[0] = COLOR_OBJECT_DETECTOR_DRAW1;
+      cod_draw[1] = COLOR_OBJECT_DETECTOR_DRAW2;
+      cod_draw[2] = COLOR_OBJECT_DETECTOR_DRAW3;
+      cod_draw[3] = COLOR_OBJECT_DETECTOR_DRAW4;
+    #endif
+    cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA, object_detector, COLOR_OBJECT_DETECTOR_FPS, 0);
+  #endif
 }
 
 /*
@@ -389,10 +177,10 @@ void color_object_detector_init(void)
  * @param draw - whether or not to draw on image
  * @return number of pixels of image within the filter bounds.
  */
-uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
-                              uint8_t lum_min, uint8_t lum_max,
-                              uint8_t cb_min, uint8_t cb_max,
-                              uint8_t cr_min, uint8_t cr_max,)
+uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw[],
+                              uint8_t lum_min[], uint8_t lum_max[],
+                              uint8_t cb_min[], uint8_t cb_max[],
+                              uint8_t cr_min[], uint8_t cr_max[])
 {
   uint32_t cnt = 0;
   uint32_t cunt = 0;
@@ -415,7 +203,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   
   int tol = 30;
   
-// Start pixel count
+  // Start pixel count
   uint32_t p = 0;
   //int tol = 30;
   int32_t area = img->h * img->w;
@@ -441,34 +229,27 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           vp = &buffer[p2];      // V
           yp = &buffer[p2 + 1];  // Y2
         }
-        if ((
-              (*yp >= lum_min1 ) && (*yp <= lum_max1 ) &&
-              (*up >= cb_min1 ) && (*up <= cb_max1 ) &&
-              (*vp >= cr_min1 ) && (*vp <= cr_max1 )
-            ) ||
-            (
-              (*yp >= lum_min2 ) && (*yp <= lum_max2 ) &&
-              (*up >= cb_min2 ) && (*up <= cb_max2 ) &&
-              (*vp >= cr_min2 ) && (*vp <= cr_max2 )
-            ) ||
-            (
-              (*yp >= lum_min3 ) && (*yp <= lum_max3 ) &&
-              (*up >= cb_min3 ) && (*up <= cb_max3 ) &&
-              (*vp >= cr_min3 ) && (*vp <= cr_max3 )
-            ) ||
-            (
-              (*yp >= lum_min4 ) && (*yp <= lum_max4 ) &&
-              (*up >= cb_min4 ) && (*up <= cb_max4 ) &&
-              (*vp >= cr_min4 ) && (*vp <= cr_max4 )
-            ) ||
-            (
-              (*yp >= lum_min5 ) && (*yp <= lum_max5 ) &&
-              (*up >= cb_min5 ) && (*up <= cb_max5 ) &&
-              (*vp >= cr_min5 ) && (*vp <= cr_max5 )
+        if ( // holy mother of if statements
+            ( // for efficiency
+              (*yp >= lum_min[0] ) && (*yp <= lum_max[0] ) &&
+              (*up >= cb_min[0] ) && (*up <= cb_max[0] ) &&
+              (*vp >= cr_min[0] ) && (*vp <= cr_max[0] )
+            ) || (
+              (*yp >= lum_min[1] ) && (*yp <= lum_max[1] ) &&
+              (*up >= cb_min[1] ) && (*up <= cb_max[1] ) &&
+              (*vp >= cr_min[1] ) && (*vp <= cr_max[1] )
+            ) || (
+              (*yp >= lum_min[2] ) && (*yp <= lum_max[2] ) &&
+              (*up >= cb_min[2] ) && (*up <= cb_max[2] ) &&
+              (*vp >= cr_min[2] ) && (*vp <= cr_max[2] )
+            ) || (
+              (*yp >= lum_min[3] ) && (*yp <= lum_max[3] ) &&
+              (*up >= cb_min[3] ) && (*up <= cb_max[3] ) &&
+              (*vp >= cr_min[3] ) && (*vp <= cr_max[3] )
             )
-            ) {
+           ) {
                   
-          // NR: Make more the weight of pixels within central rnge.
+          // NR: Make more the weight of pixels within central range.
           if (y >= 205 && y <= 315){   /// 210 & 310
             cnt += 4;
           } else if (y >= 70 && y <= 450) {
@@ -489,37 +270,34 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     // NR: Increment pixel
     p ++;
     x ++;
-    if (x > img->w){
+    if (x >= img->w){
       x = 0;
       y ++;
     }
   }
-    if (cnt > 0) {
+  // Centroid calculations
+  if (cnt > 0) {
     *p_xc = (int32_t)roundf(tot_x / ((float) cunt) - img->w * 0.5f);
     *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cunt));
   } else {
     *p_xc = 0;
     *p_yc = 0;
   }
-    return cnt;
+
+  return cnt;
 }
 
 
 void color_object_detector_periodic(void)
 {
-  static struct color_object_t local_filters[4];
+  static struct color_object_t local_filters[1];
   pthread_mutex_lock(&mutex);
-  memcpy(local_filters, global_filters, 2*sizeof(struct color_object_t));
+  memcpy(local_filters, global_filters, 2*sizeof(struct color_object_t)); // replace local_filters with global_filters
   pthread_mutex_unlock(&mutex);
 
   if(local_filters[0].updated){
     AbiSendMsgVISUAL_DETECTION(COLOR_OBJECT_DETECTION1_ID, local_filters[0].x_c, local_filters[0].y_c,
         0, 0, local_filters[0].color_count, 0);
     local_filters[0].updated = false;
-  }
-  if(local_filters[1].updated){
-    AbiSendMsgVISUAL_DETECTION(COLOR_OBJECT_DETECTION2_ID, local_filters[1].x_c, local_filters[1].y_c,
-        0, 0, local_filters[1].color_count, 1);
-    local_filters[1].updated = false;  // NR: I think we don't have to touch this? This seems to be referring to whether to use floor detection. Which is an interesting prospect.
   }
 }

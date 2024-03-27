@@ -32,46 +32,14 @@
 #include <stdbool.h>
 
 // Module settings
-extern uint8_t cod_lum_min1;
-extern uint8_t cod_lum_max1;
-extern uint8_t cod_cb_min1;
-extern uint8_t cod_cb_max1;
-extern uint8_t cod_cr_min1;
-extern uint8_t cod_cr_max1;
+extern uint8_t cod_lum_min[];
+extern uint8_t cod_lum_max[];
+extern uint8_t cod_cb_min[];
+extern uint8_t cod_cb_max[];
+extern uint8_t cod_cr_min[];
+extern uint8_t cod_cr_max[];
 
-extern uint8_t cod_lum_min2;
-extern uint8_t cod_lum_max2;
-extern uint8_t cod_cb_min2;
-extern uint8_t cod_cb_max2;
-extern uint8_t cod_cr_min2;
-extern uint8_t cod_cr_max2;
-
-extern uint8_t cod_lum_min3;
-extern uint8_t cod_lum_max3;
-extern uint8_t cod_cb_min3;
-extern uint8_t cod_cb_max3;
-extern uint8_t cod_cr_min3;
-extern uint8_t cod_cr_max3;
-
-extern uint8_t cod_lum_min4;
-extern uint8_t cod_lum_max4;
-extern uint8_t cod_cb_min4;
-extern uint8_t cod_cb_max4;
-extern uint8_t cod_cr_min4;
-extern uint8_t cod_cr_max4;
-
-extern uint8_t cod_lum_min5;
-extern uint8_t cod_lum_max5;
-extern uint8_t cod_cb_min5;
-extern uint8_t cod_cb_max5;
-extern uint8_t cod_cr_min5;
-extern uint8_t cod_cr_max5;
-
-extern bool cod_draw1;
-extern bool cod_draw2;
-extern bool cod_draw3;
-extern bool cod_draw4;
-extern bool cod_draw5;
+extern bool cod_draw[];
 
 
 // Module functions
