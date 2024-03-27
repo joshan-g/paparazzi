@@ -57,6 +57,9 @@ static pthread_mutex_t mutex;
 #ifndef COLOR_OBJECT_DETECTOR_FPS4
 #define COLOR_OBJECT_DETECTOR_FPS4 0 ///< Default FPS (zero means run at camera fps)
 #endif
+#ifndef COLOR_OBJECT_DETECTOR_FPS5
+#define COLOR_OBJECT_DETECTOR_FPS5 0 ///< Default FPS (zero means run at camera fps)
+#endif
 
 // Filter Settings
 uint8_t cod_lum_min1 = 0;
@@ -87,10 +90,18 @@ uint8_t cod_cb_max4 = 0;
 uint8_t cod_cr_min4 = 0;
 uint8_t cod_cr_max4 = 0;
 
+uint8_t cod_lum_min5 = 0;
+uint8_t cod_lum_max5 = 0;
+uint8_t cod_cb_min5 = 0;
+uint8_t cod_cb_max5 = 0;
+uint8_t cod_cr_min5 = 0;
+uint8_t cod_cr_max5 = 0;
+
 bool cod_draw1 = false;
 bool cod_draw2 = false;
 bool cod_draw3 = false;
 bool cod_draw4 = false;
+bool cod_draw5 = false;
 
 // define global variables
 struct color_object_t {
@@ -99,7 +110,7 @@ struct color_object_t {
   uint32_t color_count;
   bool updated;
 };
-struct color_object_t global_filters[4];
+struct color_object_t global_filters[5];
 
 // Function
 uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
@@ -126,9 +137,9 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
 
-  for (int i = 4; i >= 1; i--){
+  for (int i = 5; i >= 1; i--){
     if (i == 1){
-      lum_min = cod_lum_min1; //
+      lum_min = cod_lum_min1; // Orange
       lum_max = cod_lum_max1;
       cb_min = cod_cb_min1;
       cb_max = cod_cb_max1;
@@ -159,14 +170,23 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min4;
       cr_max = cod_cr_max4;
       draw = cod_draw4;
+    } else if (i == 5){
+      lum_min = cod_lum_min5;
+      lum_max = cod_lum_max5;
+      cb_min = cod_cb_min5;
+      cb_max = cod_cb_max5;
+      cr_min = cod_cr_min5;
+      cr_max = cod_cr_max5;
+      draw = cod_draw5
     }
-    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
+    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max, i);
     count += count_i;
     
     //If green, triple the count, because green is scary. E.g. trees have less density.
     if (i == 3){
       count += (count_i + count_i); // NR: I think it's better to use addition here because multiplication badness?
     }
+
     //y_c_sum += y_c;
   }
   //y_c = y_c_sum / 3;
@@ -208,6 +228,15 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_min = cod_cr_min4;
       cr_max = cod_cr_max4;
       draw = cod_draw4;
+      break;
+    case 4:
+      lum_min = cod_lum_min5;
+      lum_max = cod_lum_max5;
+      cb_min = cod_cb_min5;
+      cb_max = cod_cb_max5;
+      cr_min = cod_cr_min5;
+      cr_max = cod_cr_max5;
+      draw = cod_draw5;
       break;
     default:
       return img;
@@ -252,6 +281,12 @@ struct image_t *object_detector4(struct image_t *img, uint8_t camera_id);
 struct image_t *object_detector4(struct image_t *img, uint8_t camera_id __attribute__((unused)))
 {
   return object_detector(img, 4);
+}
+
+struct image_t *object_detector5(struct image_t *img, uint8_t camera_id);
+struct image_t *object_detector5(struct image_t *img, uint8_t camera_id __attribute__((unused)))
+{
+  return object_detector(img, 5);
 }
 
 void color_object_detector_init(void)
@@ -321,6 +356,22 @@ void color_object_detector_init(void)
 
   cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA4, object_detector4, COLOR_OBJECT_DETECTOR_FPS4, 0);
 #endif
+
+#ifdef COLOR_OBJECT_DETECTOR_CAMERA5
+#ifdef COLOR_OBJECT_DETECTOR_LUM_MIN5
+  cod_lum_min5 = COLOR_OBJECT_DETECTOR_LUM_MIN5;
+  cod_lum_max5 = COLOR_OBJECT_DETECTOR_LUM_MAX5;
+  cod_cb_min5 = COLOR_OBJECT_DETECTOR_CB_MIN5;
+  cod_cb_max5 = COLOR_OBJECT_DETECTOR_CB_MAX5;
+  cod_cr_min5 = COLOR_OBJECT_DETECTOR_CR_MIN5;
+  cod_cr_max5 = COLOR_OBJECT_DETECTOR_CR_MAX5;
+#endif
+#ifdef COLOR_OBJECT_DETECTOR_DRAW5
+  cod_draw5 = COLOR_OBJECT_DETECTOR_DRAW5;
+#endif
+
+  cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA5, object_detector5, COLOR_OBJECT_DETECTOR_FPS5, 0);
+#endif
 }
 
 /*
@@ -344,13 +395,15 @@ void color_object_detector_init(void)
 uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
                               uint8_t lum_min, uint8_t lum_max,
                               uint8_t cb_min, uint8_t cb_max,
-                              uint8_t cr_min, uint8_t cr_max)
+                              uint8_t cr_min, uint8_t cr_max,
+                              int colour)
 {
   uint32_t cnt = 0;
-  uint32_t cunt = 0;
+  uint32_t cntrd_count = 0;
   uint32_t tot_x = 0;
   uint32_t tot_y = 0;
   uint8_t *buffer = img->buf;
+  
 
 
   /** NR - The below section loops through all pixels, 
@@ -358,10 +411,16 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
    * Then returns the total count of pixels that fall within the range.
    * I've changed it to only multiply once rather than like several thousand times...
    */
+
+  /* 27 March
+  * Below has been updated to check density of each colour in columns.
+  * The purpose of this is to get rid of some of the outside noise.
+  * However, to be honest, it doesn't work very well.
+  * But i think it's better than not having it.
+  * Still need to figure out that cross white-black board.
+  */
   
 
-
-  
   int x = 0;
   int y = 0;
   
@@ -372,10 +431,11 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   //int tol = 30;
   int32_t area = img->h * img->w;
   
+  uint8_t density_column = 0;
+
   // Go through all the pixels
   while (p < area) {
     if (x >= ((img->w / 2) - tol) && x <= ((img->w/2) + tol)){
-        //printf("x: %d", x);
         // Check if the color is inside the specified values
         uint8_t *yp, *up, *vp;
         // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
@@ -396,22 +456,14 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
         if ( (*yp >= lum_min) && (*yp <= lum_max) &&
               (*up >= cb_min ) && (*up <= cb_max ) &&
               (*vp >= cr_min ) && (*vp <= cr_max )) {
-                  
-          // NR: Make more the weight of pixels within central range.
-          if (y >= 205 && y <= 315){   /// 210 & 310
-            cnt += 4;
-          } else if (y >= 70 && y <= 450) {
-            cnt += 2;
-          } else {
-            cnt ++;
-          }
           
-          cunt++;
+          density_column ++;
+          cntrd_count++;
 
           tot_x += x;
           tot_y += y;
           if (draw){
-            *yp = 255;  // make pixel brighter in image
+            //*yp = 255;  // make pixel brighter in image //NR: Commenting this out so we can get good footage.
           }
         }
       }
@@ -421,11 +473,37 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     if (x >= img->w){ // NR: Wow i see the issue!!! This was x > img->w... Now that it is x >= img->w, it should correctly take the line across the middle
       x = 0;
       y ++;
+      //When y resets, check the density of the current column for some colours. Then add to count if good enough density.
+      if (colour == 1) { // If orange
+        if (density_coloumn > 20){
+          cnt_column += density_column;
+        }
+      } else if (colour == 2){ //black
+        if (density_column > 30){
+          cnt_column += density_column;
+        }
+      } else if (colour == 5){ // High Lum
+        if (density_column > 30){
+          cnt_column += density_column;
+        } 
+      } else{
+        cnt_column += density_column;
+      }
+    }
+    // NR: Make more the weight of pixels within central range.
+    if (y >= 210 && y <= 310){
+      cnt += (cnt_column + cnt_column + cnt_column + cnt_column);
+    } else if (y >= 140 && y <= 380){  
+      cnt += (cnt_column + cnt_column + cnt_column);
+    } else if (y >= 70 && y <= 450) {
+      cnt += (cnt_column + cnt_column);
+    } else {
+      cnt ++;
     }
   }
-    if (cnt > 0) {
-    *p_xc = (int32_t)roundf(tot_x / ((float) cunt) - img->w * 0.5f);
-    *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cunt));
+    if (cntrd_count > 0) {
+    *p_xc = (int32_t)roundf(tot_x / ((float) cntrd_count) - img->w * 0.5f);
+    *p_yc = (int32_t)roundf(img->h * 0.5f - tot_y / ((float) cntrd_count));
   } else {
     *p_xc = 0;
     *p_yc = 0;
@@ -436,7 +514,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
 
 void color_object_detector_periodic(void)
 {
-  static struct color_object_t local_filters[4];
+  static struct color_object_t local_filters[5];
   pthread_mutex_lock(&mutex);
   memcpy(local_filters, global_filters, 2*sizeof(struct color_object_t));
   pthread_mutex_unlock(&mutex);
