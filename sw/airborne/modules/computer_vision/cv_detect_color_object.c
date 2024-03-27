@@ -57,7 +57,7 @@ uint8_t cod_cb_max[] = {0, 0, 0, 0};
 uint8_t cod_cr_min[] = {0, 0, 0, 0};
 uint8_t cod_cr_max[] = {0, 0, 0, 0};
 
-bool cod_draw[] = {false, false, false, false};
+bool draw[] = {false, false, false, false};
 
 // define global variables
 struct color_object_t {
