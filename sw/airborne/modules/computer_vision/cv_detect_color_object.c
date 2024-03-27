@@ -116,7 +116,7 @@ struct color_object_t global_filters[5];
 uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc, bool draw,
                               uint8_t lum_min, uint8_t lum_max,
                               uint8_t cb_min, uint8_t cb_max,
-                              uint8_t cr_min, uint8_t cr_max);
+                              uint8_t cr_min, uint8_t cr_max, int colour);
 
 /*
  * object_detector
@@ -177,7 +177,7 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cb_max = cod_cb_max5;
       cr_min = cod_cr_min5;
       cr_max = cod_cr_max5;
-      draw = cod_draw5
+      draw = cod_draw5;
     }
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max, i);
     count += count_i;
@@ -429,9 +429,10 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
 // Start pixel count
   uint32_t p = 0;
   //int tol = 30;
-  int32_t area = img->h * img->w;
+  uint32_t area = img->h * img->w;
   
   uint8_t density_column = 0;
+  uint8_t cnt_column = 0;
 
   // Go through all the pixels
   while (p < area) {
@@ -475,7 +476,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       y ++;
       //When y resets, check the density of the current column for some colours. Then add to count if good enough density.
       if (colour == 1) { // If orange
-        if (density_coloumn > 20){
+        if (density_column > 20){
           cnt_column += density_column;
         }
       } else if (colour == 2){ //black
@@ -489,16 +490,19 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       } else{
         cnt_column += density_column;
       }
-    }
+    
     // NR: Make more the weight of pixels within central range.
-    if (y >= 210 && y <= 310){
-      cnt += (cnt_column + cnt_column + cnt_column + cnt_column);
-    } else if (y >= 140 && y <= 380){  
-      cnt += (cnt_column + cnt_column + cnt_column);
-    } else if (y >= 70 && y <= 450) {
-      cnt += (cnt_column + cnt_column);
-    } else {
-      cnt ++;
+      if (y >= 210 && y <= 310){
+        cnt += (cnt_column + cnt_column + cnt_column + cnt_column);
+      } else if (y >= 140 && y <= 380){  
+        cnt += (cnt_column + cnt_column + cnt_column);
+      } else if (y >= 70 && y <= 450) {
+        cnt += (cnt_column + cnt_column);
+      } else {
+        cnt ++;
+      }
+      cnt_column = 0;
+      density_column = 0;
     }
   }
     if (cntrd_count > 0) {
