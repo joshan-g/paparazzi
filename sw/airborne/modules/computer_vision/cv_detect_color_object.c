@@ -431,12 +431,16 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   //int tol = 30;
   uint32_t area = img->h * img->w;
   
-  uint8_t density_column = 0;
-  uint8_t cnt_column = 0;
+  uint32_t density_column = 0;
+  uint32_t cnt_column = 0;
+
+  uint32_t x_min = img->w / 2 - tol
+  uint32_t x_max = img->w / 2 + tol
+
 
   // Go through all the pixels
   while (p < area) {
-    if (x >= ((img->w / 2) - tol) && x <= ((img->w/2) + tol)){
+    if (x >= x_min && x <= x_max){
         // Check if the color is inside the specified values
         uint8_t *yp, *up, *vp;
         // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
@@ -471,7 +475,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
     // NR: Increment pixel
     p ++;
     x ++;
-    if (x >= img->w){ // NR: Wow i see the issue!!! This was x > img->w... Now that it is x >= img->w, it should correctly take the line across the middle
+    if (x >= x_max){ // NR: Wow i see the issue!!! This was x > img->w... Now that it is x >= img->w, it should correctly take the line across the middle
       x = 0;
       y ++;
       //When y resets, check the density of the current column for some colours. Then add to count if good enough density.
