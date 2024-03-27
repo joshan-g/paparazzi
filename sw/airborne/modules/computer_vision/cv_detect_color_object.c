@@ -80,19 +80,22 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
  * @param filter - which detection filter to process
  * @return img
  */
+
+uint8_t numFilters = 4;
+
 static struct image_t *object_detector(struct image_t *img)
 {
-  uint8_t lum_min[], lum_max[];
-  uint8_t cb_min[], cb_max[];
-  uint8_t cr_min[], cr_max[];
-  bool draw[];
+  uint8_t lum_min[numFilters], lum_max[numFilters];
+  uint8_t cb_min[numFilters], cb_max[numFilters];
+  uint8_t cr_min[numFilters], cr_max[numFilters];
+  bool draw[numFilters];
   
   int32_t x_c, y_c;
   
   // TODO -- reimplement green scary
 
   // Filter and find centroid
-  uint32_t count = find_object_centroid(img, &x_c, &y_c, draw[], lum_min[], lum_max[], cb_min[], cb_max[], cr_min[], cr_max[]);
+  uint32_t count = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max);
   VERBOSE_PRINT("Color count %d: %u, threshold %u, x_c %d, y_c %d\n", camera, object_count, count_threshold, x_c, y_c);
   VERBOSE_PRINT("centroid %d: (%d, %d) r: %4.2f a: %4.2f\n", camera, x_c, y_c,
         hypotf(x_c, y_c) / hypotf(img->w * 0.5, img->h * 0.5), RadOfDeg(atan2f(y_c, x_c)));
@@ -106,14 +109,15 @@ static struct image_t *object_detector(struct image_t *img)
   return img;
 }
 
-struct image_t *object_detector(struct image_t *img, uint8_t camera_id __attribute__((unused)))
+struct image_t *object_detector1(struct image_t *img, uint8_t camera_id);
+struct image_t *object_detector1(struct image_t *img, uint8_t camera_id __attribute__((unused)))
 {
   return object_detector(img);
 }
 
 void color_object_detector_init(void)
 {
-  memset(global_filters, 0, 2*sizeof(struct color_object_t));
+  memset(global_filters, 0, sizeof(struct color_object_t));
   pthread_mutex_init(&mutex, NULL);
 
   #ifdef COLOR_OBJECT_DETECTOR_CAMERA
@@ -150,12 +154,12 @@ void color_object_detector_init(void)
       cod_cr_max[3] = COLOR_OBJECT_DETECTOR_CR_MAX4;
     #endif
     #ifdef COLOR_OBJECT_DETECTOR_DRAW
-      cod_draw[0] = COLOR_OBJECT_DETECTOR_DRAW1;
-      cod_draw[1] = COLOR_OBJECT_DETECTOR_DRAW2;
-      cod_draw[2] = COLOR_OBJECT_DETECTOR_DRAW3;
-      cod_draw[3] = COLOR_OBJECT_DETECTOR_DRAW4;
+      draw[0] = COLOR_OBJECT_DETECTOR_DRAW1;
+      draw[1] = COLOR_OBJECT_DETECTOR_DRAW2;
+      draw[2] = COLOR_OBJECT_DETECTOR_DRAW3;
+      draw[3] = COLOR_OBJECT_DETECTOR_DRAW4;
     #endif
-    cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA, object_detector, COLOR_OBJECT_DETECTOR_FPS, 0);
+    cv_add_to_device(&COLOR_OBJECT_DETECTOR_CAMERA, object_detector1, COLOR_OBJECT_DETECTOR_FPS, 0);
   #endif
 }
 
@@ -206,7 +210,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   // Start pixel count
   uint32_t p = 0;
   //int tol = 30;
-  int32_t area = img->h * img->w;
+  uint32_t area = img->h * img->w;
   
   // Go through all the pixels
   while (p < area) {
@@ -292,7 +296,7 @@ void color_object_detector_periodic(void)
 {
   static struct color_object_t local_filters[1];
   pthread_mutex_lock(&mutex);
-  memcpy(local_filters, global_filters, 2*sizeof(struct color_object_t)); // replace local_filters with global_filters
+  memcpy(local_filters, global_filters, sizeof(struct color_object_t)); // replace local_filters with global_filters
   pthread_mutex_unlock(&mutex);
 
   if(local_filters[0].updated){
