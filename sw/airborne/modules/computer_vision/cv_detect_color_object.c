@@ -484,11 +484,11 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           cnt_column += density_column;
         }
       } else if (colour == 2){ //black
-        if (density_column > 27){
+        if (density_column > 25){
           cnt_column += density_column;
         }
-      } else if (colour == 4){ // High Lum
-        if (density_column > 20){ ///blocks out the background, but turns when close to white board
+      } else if (colour == 4){ // Dark Black
+        if (density_column > 20){ 
           cnt_column += density_column;
         }
       } else if (colour == 5){ // High Lum
