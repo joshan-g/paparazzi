@@ -499,7 +499,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       } else if (colour == 5){ // High Lum
         if (density_column > 40){ ///blocks out the background, but turns when close to white board
           cnt_column += density_column;
-        } else if (density_column > 10){{
+        } else if (density_column > 9){{
           *protected[x-90] = 1;
         }
       } else{

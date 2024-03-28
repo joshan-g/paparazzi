@@ -20,8 +20,8 @@
       <define name="COLOR_OBJECT_DETECTOR_CR_MAX1" value="190"/>
 
       <!-- Detect black -->
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="75"/>
-      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="100"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MIN2" value="70"/>
+      <define name="COLOR_OBJECT_DETECTOR_LUM_MAX2" value="125"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MIN2" value="0"/>
       <define name="COLOR_OBJECT_DETECTOR_CB_MAX2" value="155"/>
       <define name="COLOR_OBJECT_DETECTOR_CR_MIN2" value="0"/>
