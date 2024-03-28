@@ -137,6 +137,9 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   //int32_t y_c_sum = 0;
   int32_t x_c, y_c;
 
+  int MAX_SIZE = 62;
+  int protected[MAX_SIZE];
+
   for (int i = 5; i >= 1; i--){
     if (i == 1){
       lum_min = cod_lum_min1; // Orange
@@ -179,7 +182,7 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
       cr_max = cod_cr_max5;
       draw = cod_draw5;
     }
-    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max, i);
+    count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max, i, &protected);
     count += count_i;
     
     //If green, triple the count, because green is scary. E.g. trees have less density.
@@ -485,16 +488,20 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
         }
       } else if (colour == 2){ //black
         if (density_column > 27){
-          cnt_column += density_column;
+          if (*protected[x-90] != 1) { //This should filter out much of the outside noise. But also is risky for the cross-black-board
+            cnt_column += density_column;
+          }
         }
-      } else if (colour == 4){ // High Lum
-        if (density_column > 20){ ///blocks out the background, but turns when close to white board
+      } else if (colour == 4){ // Dark Black
+        if (density_column > 20){ 
           cnt_column += density_column;
         }
       } else if (colour == 5){ // High Lum
         if (density_column > 40){ ///blocks out the background, but turns when close to white board
           cnt_column += density_column;
-        } 
+        } else if (density_column > 10){{
+          *protected[x-90] = 1;
+        }
       } else{
         cnt_column += density_column;
       }
