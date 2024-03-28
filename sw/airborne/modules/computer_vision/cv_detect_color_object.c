@@ -479,16 +479,20 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       x = 0;
       y ++;
       //When y resets, check the density of the current column for some colours. Then add to count if good enough density.
-      if (colour == 1) { // If orange
-        if (density_column > 20){
+      if (colour == 1){ // If orange
+        if (density_column > 25){
           cnt_column += density_column;
         }
       } else if (colour == 2){ //black
-        if (density_column > 30){
+        if (density_column > 27){
+          cnt_column += density_column;
+        }
+      } else if (colour == 4){ // High Lum
+        if (density_column > 20){ ///blocks out the background, but turns when close to white board
           cnt_column += density_column;
         }
       } else if (colour == 5){ // High Lum
-        if (density_column > 50){ ///blocks out the background, but turns when close to white board
+        if (density_column > 40){ ///blocks out the background, but turns when close to white board
           cnt_column += density_column;
         } 
       } else{
