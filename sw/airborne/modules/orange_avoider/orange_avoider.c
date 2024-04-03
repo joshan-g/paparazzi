@@ -52,7 +52,7 @@ enum navigation_state_t {
 };
 
 // define settings
-float oa_color_count_frac = 0.12f; //works for real life
+float oa_color_count_frac = 0.12f; // Colour count threshhold. This value works for cyberzoo with 4-3-2-1
 
 // define and initialise global variables
 enum navigation_state_t navigation_state = SEARCH_FOR_SAFE_HEADING;
@@ -60,9 +60,9 @@ int32_t color_count = 0;                // orange color count from color filter 
 int16_t obstacle_free_confidence = 0;   // a measure of how certain we are that the way ahead is safe.
 float heading_increment = 5.f;          // heading angle increment [deg]
 float maxDistance = 2.25;               // max waypoint displacement [m]
-int16_t y_c = 0;
-int loop_trap_counter = 0;
-int prev_dir;
+int16_t y_c = 0;                        // Centroid of objects within colour range
+int loop_trap_counter = 0;              // Measure of how many times we repeat turns, to avoid getting stuck in a loop.
+int prev_dir;                           // Previous turn direction
 
 const int16_t max_trajectory_confidence = 5; // number of consecutive negative object detections to be sure we are obstacle free
 
@@ -93,7 +93,7 @@ void orange_avoider_init(void)
 {
     // Initialise random values
   srand(time(NULL));
-  chooseRandomIncrementAvoidance(); // NR: Intentionaly keeping random here at init.
+  chooseRandomIncrementAvoidance(); // Random direction initialised
 
   // bind our colorfilter callbacks to receive the color filter outputs
   AbiBindMsgVISUAL_DETECTION(ORANGE_AVOIDER_VISUAL_DETECTION_ID, &color_detection_ev, color_detection_cb);
@@ -110,7 +110,7 @@ void orange_avoider_periodic(void)
   }
   
   // compute current color thresholds
-  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h; // Divided by 4 to balance pixel row height. 6 for 40 pixel row height
+  int32_t color_count_threshold = oa_color_count_frac * front_camera.output_size.w * front_camera.output_size.h;
 
 VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_count_threshold, navigation_state);
 
@@ -145,9 +145,7 @@ VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_
       waypoint_move_here_2d(WP_GOAL);
       waypoint_move_here_2d(WP_TRAJECTORY);
 
-      // randomly select new search direction
-      //chooseRandomIncrementAvoidance();
-      //////////////////////////////////// change above to intentionally go away from centroid position. Away from wall if possible. May not be possible.
+      //Choose intentional direction. Turns away from centroid of detected objects.
       chooseSmartDirectionBasedOnXCentroid();
       //printf("Centroid: %d", y_c);
       navigation_state = SEARCH_FOR_SAFE_HEADING;
@@ -158,7 +156,7 @@ VERBOSE_PRINT("Color_count: %d  threshold: %d state: %d \n", color_count, color_
 
       // make sure we have a couple of good readings before declaring the way safe
       if (obstacle_free_confidence >= 2){
-        increase_nav_heading(heading_increment); // NR: This makes it turn slightly further after declaring itself to move to forward.
+        increase_nav_heading(heading_increment); // Turn further after declaring safe. This helps avoid drifting into object.
         navigation_state = SAFE;
       }
             break;
@@ -257,25 +255,20 @@ uint8_t chooseRandomIncrementAvoidance(void)
 /*
  * Sets the variable 'heading_increment' intentionally. On the reverse side of the centroid x position.
  */
-
-
 uint8_t chooseSmartDirectionBasedOnXCentroid(void) // y_c is actually x_c in real life
 {
   if (y_c > 0){
     heading_increment = 5.f; //turn right
     VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
-
     if (prev_dir == 1){
       loop_trap_counter ++;
     } else {
       loop_trap_counter = 0;
     }
     prev_dir = 0; // 0 = right
-
   } else {
     heading_increment = -1* 5.f; //turn left
     VERBOSE_PRINT("Set avoidance increment to: %f\n", heading_increment);
-
     if (prev_dir == 0){
       loop_trap_counter ++;
     } else {
@@ -283,12 +276,9 @@ uint8_t chooseSmartDirectionBasedOnXCentroid(void) // y_c is actually x_c in rea
     }
     prev_dir = 1; // 1 = left
   }
-
-  if (loop_trap_counter >= 4){ //On the Xth repitition of repeat / trap loop {
+  if (loop_trap_counter >= 4){ //On the Xth repitition of repeated directions, change to get out of trap
     heading_increment *= -1.f;
   }
-
-
   return false;
 }
 

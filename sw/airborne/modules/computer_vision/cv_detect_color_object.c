@@ -182,9 +182,9 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
     count_i = find_object_centroid(img, &x_c, &y_c, draw, lum_min, lum_max, cb_min, cb_max, cr_min, cr_max, i);
     count += count_i;
     
-    //If green, triple the count, because green is scary. E.g. trees have less density.
+    //If green, triple the count, because trees have less density.
     if (i == 3){
-      count += (count_i + count_i); // NR: I think it's better to use addition here because multiplication badness?
+      count += (count_i + count_i);
     }
 
     //y_c_sum += y_c;
@@ -192,6 +192,8 @@ static struct image_t *object_detector(struct image_t *img, uint8_t filter)
   //y_c = y_c_sum / 3;
 //The above for loop sums the count of all 3. 
   /*
+  * NR: Switch case left commented because 
+  * it can be brought back in in future iterations.
   switch (filter){
     case 1:
       lum_min = cod_lum_min1;
@@ -409,16 +411,8 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   /** NR - The below section loops through all pixels, 
    * and checks if the pixel is within given colour range.
    * Then returns the total count of pixels that fall within the range.
-   * I've changed it to only multiply once rather than like several thousand times...
+   * It now only multiplies once rather than several thousand times.
    */
-
-  /* 27 March
-  * Below has been updated to check density of each colour in columns.
-  * The purpose of this is to get rid of some of the outside noise.
-  * However, to be honest, it doesn't work very well.
-  * But i think it's better than not having it.
-  * Still need to figure out that cross white-black board.
-  */
   
 
   uint32_t x = 0;
@@ -426,9 +420,7 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   
   int tol = 30;
   
-// Start pixel count
   uint32_t p = 0;
-  //int tol = 30;
   uint32_t area = img->h * img->w;
   
   uint32_t density_column = 0;
@@ -437,13 +429,16 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
   uint32_t x_min = img->w / 2 - tol;
   uint32_t x_max = img->w / 2 + tol;
 
-
+  /**Below uses a while loop rather than the old nested for loop.
+   * This new code saves thousands of multiplications and
+   * drastically increases drone computation speed, compared to original.
+  */
   // Go through all the pixels
   while (p < area) {
+    //Check only middle 60 rows
     if (x >= x_min && x <= x_max){
         // Check if the color is inside the specified values
         uint8_t *yp, *up, *vp;
-        // NR: Honestly, I don't know why it multiplys by 2 here but it keeps it consistent with the OG code.
         uint32_t p2 = p+p; 
         if (p % 2 == 0) {
           // Even x
@@ -468,14 +463,14 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
           tot_x += x;
           tot_y += y;
           if (draw){
-            //*yp = 255;  // make pixel brighter in image //NR: Commenting this out so we can get good footage.
+            *yp = 255;  // make pixel brighter in image. NR: Comment this out to get clear footage
           }
         }
       }
     // NR: Increment pixel
     p ++;
     x ++;
-    if (x >= x_max){ // NR: Wow i see the issue!!! This was x > img->w... Now that it is x >= img->w, it should correctly take the line across the middle
+    if (x >= x_max){
       x = 0;
       y ++;
       //When y resets, check the density of the current column for some colours. Then add to count if good enough density.
@@ -509,7 +504,6 @@ uint32_t find_object_centroid(struct image_t *img, int32_t* p_xc, int32_t* p_yc,
       } else {
         cnt ++;
       }
-      ////////////////////////////printf("check density: %d", density_column);
       cnt_column = 0;
       density_column = 0;
     }
@@ -540,6 +534,6 @@ void color_object_detector_periodic(void)
   if(local_filters[1].updated){
     AbiSendMsgVISUAL_DETECTION(COLOR_OBJECT_DETECTION2_ID, local_filters[1].x_c, local_filters[1].y_c,
         0, 0, local_filters[1].color_count, 1);
-    local_filters[1].updated = false;  // NR: I think we don't have to touch this? This seems to be referring to whether to use floor detection. Which is an interesting prospect.
+    local_filters[1].updated = false; 
   }
 }
