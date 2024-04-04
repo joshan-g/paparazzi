@@ -13,8 +13,8 @@ Our code aims to detect each object in the cyberzoo by specifying the colour ran
 
 The main files changed in this fork are:
 
-cv_detect_color_object.c
-orange_avoider.c
-orange_avoider.xml
-cv_detect_color_object.xml
-bebop_course_orangeavoid.xml
+- cv_detect_color_object.c
+- orange_avoider.c
+- orange_avoider.xml
+- cv_detect_color_object.xml
+- bebop_course_orangeavoid.xml
